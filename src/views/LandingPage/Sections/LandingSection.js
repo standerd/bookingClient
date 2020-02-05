@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // core components
@@ -59,6 +58,10 @@ export default function SectionCards(props) {
     return current.isAfter(yesterday);
   };
 
+  var outLimit = function(current) {
+    return current.isAfter(moment(props.dateIn, "DD-MM-YYYY"));
+  };
+
   return (
     <div className={classNames(classes.section, classes.sectionLight)}>
       <div style={{ height: "auto" }} className={classes.container}>
@@ -72,7 +75,7 @@ export default function SectionCards(props) {
             <br />
             <div style={{ borderBottom: " 1px solid #ccc" }}>
               <GoogleSearch
-                handleChange={props.handleChange}
+                handleChange={props.handleGoogleChange}
                 address={props.city}
               />
             </div>
@@ -86,7 +89,10 @@ export default function SectionCards(props) {
                 timeFormat={false}
                 isValidDate={inLimit}
                 closeOnSelect={true}
-                onChange={result => console.log(result)}
+                value={props.dateIn}
+                onChange={result =>
+                  props.handleSearchChange("dateIn", result._d)
+                }
                 inputProps={{ placeholder: "From" }}
               />
             </FormControl>
@@ -97,11 +103,16 @@ export default function SectionCards(props) {
             <br />
             <FormControl fullWidth>
               <Datetime
+                value={props.dateOut}
                 timeFormat={false}
-                isValidDate={inLimit}
+                isValidDate={outLimit}
                 closeOnSelect={true}
+                onChange={result =>
+                  props.handleSearchChange("dateOut", result._d)
+                }
                 utc={false}
                 inputProps={{ placeholder: "To" }}
+                require={true}
               />
             </FormControl>
           </GridItem>
@@ -118,6 +129,8 @@ export default function SectionCards(props) {
                 inputProps={{
                   type: "number",
                   min: 1,
+                  require: "true",
+                  onChange: props.handleGuestChange,
                   value: props.noOfGuests,
                   endAdornment: (
                     <InputAdornment position="end">
@@ -132,11 +145,13 @@ export default function SectionCards(props) {
             <br />
             <FormControl fullWidth>
               <br />
-              <Link to="/searchResults">
-                <Button type="button" color="info">
-                  Search
-                </Button>
-              </Link>
+              <Button
+                onClick={props.handleSearchSubmit}
+                type="button"
+                color="info"
+              >
+                Search
+              </Button>
             </FormControl>
           </GridItem>
         </GridContainer>

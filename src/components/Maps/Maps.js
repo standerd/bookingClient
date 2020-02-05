@@ -3,25 +3,73 @@ import {
   withScriptjs,
   withGoogleMap,
   GoogleMap,
-  Marker
+  Marker,
+  InfoWindow
 } from "react-google-maps";
 import Key from "../../config/keys";
 
-const RegularMap = withScriptjs(
-  withGoogleMap(props => (
-    <GoogleMap
-      defaultZoom={8}
-      defaultCenter={{ lat: 40.748817, lng: -73.985428 }}
-      defaultOptions={{
-        scrollwheel: false
-      }}
-    >
-      <Marker position={{ lat: 40.748817, lng: -73.985428 }} />
-    </GoogleMap>
-  ))
-);
+export default function GoogleMaps(props) {
+  let markers;
 
-export default function GoogleMaps() {
+  !props.selected
+    ? (markers = null)
+    : props.markerArray === undefined || props.markerArray.length === 0
+    ? (markers = (
+        <Marker
+          position={{
+            lat: props.initialLat,
+            lng: props.initialLng
+          }}
+        />
+      ))
+    : (markers = props.markerArray.map((key, index) => {
+        return (
+          <Marker
+            key={key._id}
+            onClick={MouseEvent => props.openWindow(index)}
+            label={(index + 1).toString()}
+            position={{
+              lat: parseFloat(key.lat),
+              lng: parseFloat(key.long)
+            }}
+          />
+        );
+      }));
+
+  const RegularMap = withScriptjs(
+    withGoogleMap(() => (
+      <GoogleMap
+        defaultZoom={props.zoom}
+        defaultCenter={{ lat: props.initialLat, lng: props.initialLng }}
+        defaultOptions={{
+          scrollwheel: false
+        }}
+      >
+        {markers}
+        {props.showInfo ? (
+          <InfoWindow
+            onCloseClick={() => props.closeWindow()}
+            position={{
+              lat: parseFloat(props.propsLat),
+              lng: parseFloat(props.propsLng)
+            }}
+          >
+            <div
+              style={{
+                background: `rgba(8, 8, 8, 0.8)`,
+                border: `1px solid white`,
+                color: "white",
+                fontSize: " 0.5rem",
+                padding: 5
+              }}
+            >
+              <h1>{props.propsName}</h1>
+            </div>
+          </InfoWindow>
+        ) : null}
+      </GoogleMap>
+    ))
+  );
   return (
     <RegularMap
       googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${Key.mapsKey}`}

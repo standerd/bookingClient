@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React from "react";
+import React, { Fragment } from "react";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
 // react components for routing our app without refresh
@@ -85,51 +85,156 @@ export default function HeaderLinks(props) {
 
   const { dropdownHoverColor } = props;
   const classes = useStyles();
+
+  const user = localStorage.getItem("userId");
+  const admin = localStorage.getItem("isAdmin");
+  const property = localStorage.getItem("propId");
+
+  console.log("User = " + property + typeof property);
+
+  let propLinks;
+  let adminLinks;
+  let userLinks;
+  let logout;
+
+  property === "undefined" || property === null
+    ? (propLinks = null)
+    : (propLinks = (
+        <ListItem className={classes.listItem}>
+          <CustomDropdown
+            noLiPadding
+            navDropdown
+            hoverColor={dropdownHoverColor}
+            buttonText="Manage Property"
+            buttonProps={{
+              className: classes.navLink,
+              color: "transparent"
+            }}
+            buttonIcon={Apps}
+            dropdownList={[
+              <Link to="/login" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Login
+              </Link>,
+              <Link to="/register" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Register
+              </Link>,
+              <Link to="/searchResults" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Search Results
+              </Link>,
+              <Link to="/propDetails" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Property Details
+              </Link>,
+              <Link to="/completeBooking" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Finalise Booking
+              </Link>,
+              <Link to="/bookings" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                User Bookings
+              </Link>,
+              <Link to="/propContact" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Property Contact
+              </Link>
+            ]}
+          />
+        </ListItem>
+      ));
+
+  admin === "true"
+    ? (adminLinks = (
+        <ListItem className={classes.listItem}>
+          <CustomDropdown
+            noLiPadding
+            navDropdown
+            hoverColor={dropdownHoverColor}
+            buttonText="Admin"
+            buttonProps={{
+              className: classes.navLink,
+              color: "transparent"
+            }}
+            buttonIcon={Apps}
+            dropdownList={[
+              <Link to="/adminBookings" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                View Bookings
+              </Link>,
+              <Link to="/adminProperties" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                View Properties
+              </Link>,
+              <Link to="/adminUsers" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                View Users
+              </Link>
+            ]}
+          />
+        </ListItem>
+      ))
+    : (adminLinks = null);
+
+  user === null
+    ? (userLinks = (
+        <Fragment>
+          <Link to="/login" className={classes.dropdownLink}>
+            <Layers className={classes.dropdownIcons} />
+            Login
+          </Link>
+          <Link to="/register" className={classes.dropdownLink}>
+            <Layers className={classes.dropdownIcons} />
+            Register
+          </Link>
+        </Fragment>
+      ))
+    : (userLinks = (
+        <ListItem className={classes.listItem}>
+          <CustomDropdown
+            noLiPadding
+            navDropdown
+            hoverColor={dropdownHoverColor}
+            buttonText="My Account"
+            buttonProps={{
+              className: classes.navLink,
+              color: "transparent"
+            }}
+            buttonIcon={Apps}
+            dropdownList={[
+              <Link to="/bookings" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                My Bookings
+              </Link>,
+              <Link to="/regProperty" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                Register Property
+              </Link>,
+              <Link to="/myAccount" className={classes.dropdownLink}>
+                <Layers className={classes.dropdownIcons} />
+                My Account
+              </Link>
+            ]}
+          />
+        </ListItem>
+      ));
+
+  user !== null
+    ? (logout = (
+        <Link to="" onClick={props.logout} className={classes.dropdownLink}>
+          Logout
+        </Link>
+      ))
+    : (logout = null);
+
   return (
     <List className={classes.list + " " + classes.mlAuto}>
-      <ListItem className={classes.listItem}>
-        <CustomDropdown
-          noLiPadding
-          navDropdown
-          hoverColor={dropdownHoverColor}
-          buttonText="Working"
-          buttonProps={{
-            className: classes.navLink,
-            color: "transparent"
-          }}
-          buttonIcon={Apps}
-          dropdownList={[
-            <Link to="/login" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Login
-            </Link>,
-            <Link to="/register" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Register
-            </Link>,
-            <Link to="/searchResults" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Search Results
-            </Link>,
-            <Link to="/propDetails" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Property Details
-            </Link>,
-            <Link to="/completeBooking" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Finalise Booking
-            </Link>,
-            <Link to="/bookings" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              User Bookings
-            </Link>,
-            <Link to="/propContact" className={classes.dropdownLink}>
-              <Layers className={classes.dropdownIcons} />
-              Property Contact
-            </Link>
-          ]}
-        />
-      </ListItem>
+      {userLinks}
+      {propLinks}
+      {adminLinks}
+      {logout}
+
       <ListItem className={classes.listItem}>
         <CustomDropdown
           noLiPadding

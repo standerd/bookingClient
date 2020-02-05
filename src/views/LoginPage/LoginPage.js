@@ -33,6 +33,7 @@ export default function LoginPage(props) {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
   });
+  const myError = false
   const classes = useStyles();
   return (
     <div>
@@ -66,60 +67,66 @@ export default function LoginPage(props) {
                   <p className={classes.description + " " + classes.textCenter}>
                     Or Use Your Account
                   </p>
+                  <p style={{ color: "red", textAlign: "center" }}>
+                    {props.errMessage}
+                  </p>
                   <CardBody signup>
-                    <CustomInput
-                      id="email"
-                      value={props.email}
-                      formControlProps={{
-                        fullWidth: true,
-                        required: true
-                      }}
-                      inputProps={{
-                        placeholder: "Email...",
-                        type: "email",
-                        onChange: props.changeHandler("email"),
-                        value: props.email,
-                        required: true,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email className={classes.inputIconsColor} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                    <CustomInput
-                      id="pass"
-                      formControlProps={{
-                        fullWidth: true,
-                        required: true
-                      }}
-                      inputProps={{
-                        placeholder: "Password",
-                        type: "password",
-                        onChange: props.changeHandler("password"),
-                        value: props.password,
-                        required: true,
-                        error: true,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Icon className={classes.inputIconsColor}>
-                              lock_utline
-                            </Icon>
-                          </InputAdornment>
-                        ),
-                        autoComplete: "off"
-                      }}
-                    />
+                    <form onSubmit={props.loginHandler}>
+                      <CustomInput
+                        id="email"
+                        formControlProps={{
+                          fullWidth: true,
+                          required: true,
+                        }}
+                        inputProps={{
+                          placeholder: "Email...",
+                          type: "email",
+                          onChange: props.changeHandler("email"),
+                          value: props.email,
+                          required: true,
+                          error: myError === false ? true : false,
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Email className={classes.inputIconsColor} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                      <CustomInput
+                        id="pass"
+                        formControlProps={{
+                          fullWidth: true,
+                          required: true
+                        }}
+                        inputProps={{
+                          placeholder: "Password",
+                          type: "password",
+                          onChange: props.changeHandler("password"),
+                          value: props.password,
+                          required: true,
+
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Icon className={classes.inputIconsColor}>
+                                lock_utline
+                              </Icon>
+                            </InputAdornment>
+                          ),
+                          autoComplete: "off"
+                        }}
+                      />
+                      <div className={classes.textCenter}>
+                        <Button
+                          type="submit"
+                          // onSubmit={props.loginHandler}
+                          color="info"
+                        >
+                          Login
+                        </Button>
+                      </div>
+                    </form>
                   </CardBody>
                   <div className={classes.textCenter}>
-                    <Button
-                      type="submit"
-                      onClick={props.loginHandler}
-                      color="info"
-                    >
-                      Login
-                    </Button>
-
                     <h6>Don't Have An Account</h6>
                     <Link
                       to="register"

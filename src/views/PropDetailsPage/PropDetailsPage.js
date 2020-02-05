@@ -1,5 +1,5 @@
 /*eslint-disable*/
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 // nodejs library that concatenates classes
 import classNames from "classnames";
@@ -24,11 +24,11 @@ import Accordion from "components/Accordion/Accordion.js";
 import productStyle from "assets/jss/material-kit-pro-react/views/productStyle.js";
 
 // images
-import product1 from "assets/images/image1.jpg";
-import product2 from "assets/images/image2.jpg";
-import product3 from "assets/images/image3.jpg";
-import product4 from "assets/images/image4.jpg";
-4;
+const product1 = "http://localhost:3001/images/image1.jpg";
+const product2 = null;
+const product3 = "http://localhost:3001/images/image1.jpg";
+const product4 = "http://localhost:3001/images/image1.jpg";
+
 const useStyles = makeStyles(productStyle);
 
 export default function ProductPage() {

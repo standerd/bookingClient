@@ -21,11 +21,7 @@ import styles from "assets/jss/material-kit-pro-react/views/ecommerceStyle.js";
 
 const useStyles = makeStyles(styles);
 
-export default function EcommercePage() {
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-  });
+export default function EcommercePage(props) {
   const classes = useStyles();
   return (
     <div>
@@ -60,7 +56,23 @@ export default function EcommercePage() {
         </div>
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
-        <SectionSearchResults />
+        <SectionSearchResults
+          markerArray={props.markerArray}
+          initialLat={props.initialLat}
+          initialLng={props.initialLng}
+          zoom={props.zoom}
+          selected={props.selected}
+          dateIn={props.dateIn}
+          dateOut={props.dateOut}
+          amendSearch={props.amendSearch}
+          auth={props.isAuth}
+          openWindow={props.openWindow}
+          closeWindow={props.closeWindow}
+          showInfo={props.showInfo}
+          propsName={props.propsName}
+          propsLat={props.propsLat}
+          propsLng={props.propsLng}
+        />
       </div>
       <div
         className={classNames(

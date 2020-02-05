@@ -5,8 +5,6 @@ import classNames from "classnames";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
-import Header from "components/Header/Header.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
 import Parallax from "components/Parallax/Parallax.js";
 import Footer from "components/Footer/Footer.js";
 import GridContainer from "components/Grid/GridContainer.js";
@@ -19,7 +17,7 @@ import presentationStyle from "assets/jss/material-kit-pro-react/views/presentat
 
 const useStyles = makeStyles(presentationStyle);
 
-export default function PresentationPage() {
+export default function PresentationPage(props) {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
@@ -27,16 +25,6 @@ export default function PresentationPage() {
   const classes = useStyles();
   return (
     <div>
-      <Header
-        brand="Traveller"
-        links={<HeaderLinks dropdownHoverColor="info" />}
-        fixed
-        color="white"
-        changeColorOnScroll={{
-          height: 400,
-          color: "info"
-        }}
-      />
       <Parallax
         image={require("assets/img/test.jpg")}
         className={classes.parallax}
@@ -55,7 +43,18 @@ export default function PresentationPage() {
         </div>
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
-        <SectionCards />
+        <SectionCards
+          handleSearchChange={props.handleSearchChange}
+          dateOut={props.dateOut}
+          dateIn={props.dateIn}
+          handleGoogleChange={props.handleGoogleChange}
+          city={props.city}
+          handleSearchSubmit={props.handleSearchSubmit}
+          noOfGuests={props.noOfGuests}
+          valid={props.valid}
+          waiting={props.waiting}
+          handleGuestChange={props.handleGuestChange}
+        />
       </div>
       <Footer
         className={classes.footer}

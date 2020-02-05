@@ -20,6 +20,11 @@ import CompleteBookingPage from "views/CompleteBookingPage/CompleteBookingPage";
 import RegisterPage from "views/RegisterPage/RegisterPage.js";
 import ErrorPage from "views/ErrorPage/ErrorPage.js";
 import UserBookings from "views/UserBookings/UserBookingsPage";
+import Header from "components/Header/Header.js";
+import HeaderLinks from "components/Header/HeaderLinks.js";
+import AdminBookings from "views/Admin/AdminBookings";
+import AdminProperties from "views/Admin/AdminProperties";
+import AdminUsers from "views/Admin/AdminUser";
 
 class App extends Component {
   state = {
@@ -30,14 +35,35 @@ class App extends Component {
     isAuth: false,
     token: null,
     userId: null,
+    propId: undefined,
+    isAdmin: false,
     showBackdrop: false,
     showMobileNav: false,
     error: false,
-    type: "user"
+    errMessage: "",
+    valid: true,
+    city: "",
+    dateIn: "",
+    dateOut: "",
+    noOfGuests: "1",
+    lat: "",
+    lng: "",
+    zoomLevel: 3,
+    searchArray: null,
+    searching: false,
+    initialLat: -29.27076,
+    initialLng: 25.112268,
+    zoom: 5,
+    selected: false,
+    amendSearch: false,
+    waiting: false,
+    markerIndex: "",
+    showInfo: false
   };
 
   //login change handler that handles the users email and password input data.
   loginChangeHandler = name => e => {
+    console.log(e.target.value);
     this.setState({ [name]: e.target.value });
   };
 
@@ -57,10 +83,10 @@ class App extends Component {
     })
       .then(res => {
         if (res.status === 422) {
-          throw new Error("Validation failed.");
+          throw new Error("Please validate your e-mail adress first.");
         }
         if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Could not authenticate you!");
+          throw new Error("Invalid Login Credentials");
         }
         return res.json();
       })
@@ -71,12 +97,15 @@ class App extends Component {
           isAuth: true,
           token: resData.token,
           userId: resData.userId,
-          type: resData.type,
-          error: false
+          propId: resData.propId,
+          isAdmin: resData.isAdmin,
+          error: false,
+          valid: true
         });
         localStorage.setItem("token", resData.token);
         localStorage.setItem("userId", resData.userId);
-        localStorage.setItem("type", resData.type);
+        localStorage.setItem("propId", resData.propId);
+        localStorage.setItem("isAdmin", resData.isAdmin);
 
         //sets token expiry, users are automatically logged out after 60 mins.
         const remainingTime = 60 * 60 * 1000;
@@ -88,7 +117,8 @@ class App extends Component {
         this.setState({
           isAuth: false,
           authLoading: false,
-          error: true
+          error: true,
+          errMessage: err.message
         });
       });
   };
@@ -112,7 +142,6 @@ class App extends Component {
           throw new Error("Validation failed.");
         }
         if (res.status !== 200 && res.status !== 201) {
-          console.log("Error!");
           throw new Error("Could not authenticate you!");
         }
         return res.json();
@@ -138,68 +167,7 @@ class App extends Component {
         this.props.history.push("/");
       })
       .catch(err => {
-        this.setState({
-          isAuth: false,
-          authLoading: false,
-          error: true
-        });
-      });
-  };
-
-  //facebook login handler.
-  facebookLoginHandler = response => {
-    //response is received from facebook API when user logs in. This data is sent to the server
-    //for login or registration of the user. the token is also validated in the server against
-    //the facebook validation API.
-    const token = response.accessToken;
-
-    //unlike google login, facebook validation results in the server does not return user details again
-    //so these are sent to the server with the login request.
-    const { name, email, userID } = response;
-
-    fetch("/user/facebookLogin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        token: token,
-        name,
-        email,
-        userID
-      })
-    })
-      .then(res => {
-        if (res.status === 422) {
-          throw new Error("Validation failed.");
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log("Error!");
-          throw new Error("Could not authenticate you!");
-        }
-        return res.json();
-      })
-      .then(resData => {
-        //sets user login status and jwt data in local storage, this allows for the users details to be sent
-        //inside the auth headers to access routes that are protected.
-        this.setState({
-          isAuth: true,
-          token: resData.token,
-          userId: resData.userId,
-          type: resData.type,
-          error: false
-        });
-        localStorage.setItem("token", resData.token);
-        localStorage.setItem("userId", resData.userId);
-        localStorage.setItem("type", resData.type);
-
-        //autologout info
-        const remainingTime = 60 * 60 * 1000;
-        const tokenExpiry = new Date(new Date().getTime() + remainingTime);
-        localStorage.setItem("tokenExpiry", tokenExpiry.toISOString());
-        this.props.history.push("/");
-      })
-      .catch(err => {
+        console.log(err);
         this.setState({
           isAuth: false,
           authLoading: false,
@@ -214,7 +182,8 @@ class App extends Component {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("tokenExpiry");
-    localStorage.removeItem("type");
+    localStorage.removeItem("propId");
+    localStorage.removeItem("isAdmin");
 
     this.props.history.push("/");
   };
@@ -224,7 +193,9 @@ class App extends Component {
     // the is login status is set to having been logged in.
     const token = localStorage.getItem("token");
     const expiryDate = localStorage.getItem("tokenExpiry");
-    const type = localStorage.getItem("type");
+    const propId = localStorage.getItem("propId");
+    const isAdmin = localStorage.getItem("isAdmin");
+    const userId = localStorage.getItem("userId");
 
     if (!token || !expiryDate) {
       return;
@@ -235,14 +206,14 @@ class App extends Component {
       return;
     }
 
-    const userId = localStorage.getItem("userId");
     const remainingTime = new Date(expiryDate).getTime() - new Date().getTime();
 
     this.setState({
       isAuth: true,
       token: token,
       userId: userId,
-      type: type
+      propId: propId === "undefined" ? undefined : propId,
+      isAdmin: isAdmin === "true" ? true : false
     });
 
     this.setAutoLogout(remainingTime);
@@ -256,41 +227,189 @@ class App extends Component {
     }, milliseconds);
   };
 
+  // Property Search Functionality
+  handleGoogleChange = address => {
+    const [city, latLong] = address;
+    this.setState({
+      city: city,
+      initialLat: parseFloat(latLong[0]),
+      initialLng: parseFloat(latLong[1]),
+      selected: true,
+      zoom: 10
+    });
+  };
+
+  handleGuestChange = e => {
+    this.setState({ noOfGuests: e.target.value, amendSearch: true });
+  };
+
+  handleSearchChange = (name, value) => {
+    if (name === "dateIn") {
+      this.setState({ dateIn: value.toLocaleDateString(), dateOut: "" });
+    } else {
+      this.setState({ dateOut: value.toLocaleDateString() });
+    }
+  };
+
+  //search component on click handler, once the search details is submitted, the data is
+  //sent to the server as a POST request and the returned data is set to state.
+  handleSearchSubmit = e => {
+    e.preventDefault();
+    this.setState({ waiting: true });
+    this.state.city === ""
+      ? this.setState({ valid: false })
+      : fetch("/search/searchProperty", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            lat: this.state.initialLat,
+            lng: this.state.initialLng
+          })
+        })
+          .then(res => res.json())
+          .then(result => {
+            console.log(result);
+            // if no properties were found for the search location entered by the user
+            // the server returns null, if null is received an error is set and a message
+            // is shown to the user which cities have got properties loaded.
+            if (result.results === null) {
+              this.setState({ getError: true, searching: true });
+            } else {
+              this.setState(
+                {
+                  searching: true,
+                  searchArray: result.results,
+                  amendSearch: false,
+                  valid: true,
+                  getError: false,
+                  waiting: false
+                },
+                () => this.props.history.push("/searchResults")
+              );
+            }
+          })
+          .catch(err => console.log("There was an errro" + err));
+  };
+
+  // map marker info boxes on marker click.
+  openWindow = index => {
+    this.setState({ showInfo: true, markerIndex: index });
+  };
+
+  closeWindow = () => {
+    this.setState({ showInfo: false });
+  };
+
   render() {
     return (
-      <Switch>
-        <Route path="/about-us" component={AboutUsPage} />
-        <Route path="/blog-post" component={BlogPostPage} />
-        <Route path="/blog-posts" component={BlogPostsPage} />
-        <Route path="/components" component={ComponentsPage} />
-        <Route path="/sections" component={SectionsPage} />
-        <Route path="/landing" component={LandingPage} />
-        <Route path="/error-page" component={ErrorPage} />
-        <Route path="/profile-page" component={ProfilePage} />
-        <Route
-          path="/login"
-          render={() => (
-            <LoginPage
-              {...this.props}
-              loginHandler={this.loginHandler}
-              changeHandler={this.loginChangeHandler}
-              googleLogin={this.googleLoginHandler}
-              facebookLogin={this.facebookLoginHandler}
-              email={this.state.email}
-              password={this.state.password}
-              error={this.state.error}
+      <div>
+        <Header
+          brand="Traveller"
+          links={
+            <HeaderLinks
+              logout={this.logoutHandler}
+              dropdownHoverColor="info"
             />
-          )}
+          }
+          fixed
+          color="white"
+          changeColorOnScroll={{
+            height: 400,
+            color: "info"
+          }}
         />
-        <Route path="/register" component={RegisterPage} />
-        <Route path="/searchResults" component={SearchResults} />
-        <Route path="/propDetails" component={PropDetailsPage} />
-        <Route path="/completeBooking" component={CompleteBookingPage} />
-        <Route path="/bookings" component={UserBookings} />
-        <Route path="/manageBooking" component={ManageBookings} />
-        <Route path="/propContact" component={PropContactPage} />
-        <Route path="/" exact component={LandingPage} />
-      </Switch>
+        <Switch>
+          <Route path="/about-us" component={AboutUsPage} />
+          <Route path="/blog-post" component={BlogPostPage} />
+          <Route path="/blog-posts" component={BlogPostsPage} />
+          <Route path="/components" component={ComponentsPage} />
+          <Route path="/sections" component={SectionsPage} />
+          <Route path="/landing" component={LandingPage} />
+          <Route path="/error-page" component={ErrorPage} />
+          <Route path="/profile-page" component={ProfilePage} />
+          <Route
+            path="/login"
+            render={() => (
+              <LoginPage
+                {...this.props}
+                loginHandler={this.loginHandler}
+                changeHandler={this.loginChangeHandler}
+                googleLogin={this.googleLoginHandler}
+                facebookLogin={this.facebookLoginHandler}
+                email={this.state.email}
+                password={this.state.password}
+                error={this.state.error}
+                errMessage={this.state.errMessage}
+              />
+            )}
+          />
+          <Route path="/register" component={RegisterPage} />
+          <Route
+            path="/searchResults"
+            render={() => (
+              <SearchResults
+                {...this.props}
+                markerArray={this.state.searchArray}
+                initialLat={this.state.initialLat}
+                initialLng={this.state.initialLng}
+                zoom={this.state.zoom}
+                selected={this.state.selected}
+                dateIn={this.state.dateIn}
+                dateOut={this.state.dateOut}
+                amendSearch={this.state.amendSearch}
+                auth={this.props.isAuth}
+                openWindow={this.openWindow}
+                closeWindow={this.closeWindow}
+                showInfo={this.state.showInfo}
+                propsName={
+                  this.state.markerIndex === ""
+                    ? "No Info"
+                    : this.state.searchArray[this.state.markerIndex].name
+                }
+                propsLat={
+                  this.state.markerIndex === ""
+                    ? "No Info"
+                    : this.state.searchArray[this.state.markerIndex].lat
+                }
+                propsLng={
+                  this.state.markerIndex === ""
+                    ? "No Info"
+                    : this.state.searchArray[this.state.markerIndex].long
+                }
+              />
+            )}
+          />
+          <Route path="/propDetails" component={PropDetailsPage} />
+          <Route path="/completeBooking" component={CompleteBookingPage} />
+          <Route path="/bookings" component={UserBookings} />
+          <Route path="/manageBooking" component={ManageBookings} />
+          <Route path="/propContact" component={PropContactPage} />
+          <Route path="/adminBookings" component={AdminBookings} />
+          <Route path="/adminUsers" component={AdminUsers} />
+          <Route path="/adminProperties" component={AdminProperties} />
+          <Route
+            path="/"
+            exact
+            render={() => (
+              <LandingPage
+                {...this.props}
+                handleSearchChange={this.handleSearchChange}
+                handleGuestChange={this.handleGuestChange}
+                dateOut={this.state.dateOut}
+                dateIn={this.state.dateIn}
+                handleGoogleChange={this.handleGoogleChange}
+                city={this.state.city}
+                handleSearchSubmit={this.handleSearchSubmit}
+                noOfGuests={this.state.noOfGuests}
+                valid={this.state.valid}
+                waiting={this.state.waiting}
+              />
+            )}
+          />
+        </Switch>
+      </div>
     );
   }
 }
