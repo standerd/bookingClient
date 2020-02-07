@@ -37,6 +37,8 @@ export default function CustomFileInput(props) {
     }
     setFiles(files);
     setFileNames(fileNames);
+    console.log(e.target.files[0]);
+    props.myFunction(e.target.files[0]);
   };
   const {
     id,

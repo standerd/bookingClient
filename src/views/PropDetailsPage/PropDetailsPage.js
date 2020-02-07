@@ -25,32 +25,20 @@ import productStyle from "assets/jss/material-kit-pro-react/views/productStyle.j
 
 // images
 const product1 = "http://localhost:3001/images/image1.jpg";
-const product2 = null;
-const product3 = "http://localhost:3001/images/image1.jpg";
-const product4 = "http://localhost:3001/images/image1.jpg";
+const product3 = "http://localhost:3001/images/image2.jpg";
+const product4 = "http://localhost:3001/images/image3.jpg";
+
+const imagesArray = [product1, product4, product3];
 
 const useStyles = makeStyles(productStyle);
 
-export default function ProductPage() {
+export default function ProductPage(props) {
   const classes = useStyles();
-  const images = [
-    {
-      original: product3,
-      thumbnail: product3
-    },
-    {
-      original: product4,
-      thumbnail: product4
-    },
-    {
-      original: product1,
-      thumbnail: product1
-    },
-    {
-      original: product2,
-      thumbnail: product2
-    }
-  ];
+  const images = imagesArray.map(key => {
+    return { original: key, thumbnail: key };
+  });
+
+  console.log("Props given to details " + props.propDetails);
   return (
     <div className={classes.productPage}>
       <Header
@@ -88,16 +76,7 @@ export default function ProductPage() {
                   collapses={[
                     {
                       title: "Description",
-                      content: (
-                        <p>
-                          Hotel Transalvania is Located within walking distance
-                          from the beach and has various options for dining
-                          available both on site as well as various restaurants
-                          within close walking distance. We serve a great
-                          breakfast, and out staff is always willing to assist
-                          with whatever assistance you require.
-                        </p>
-                      )
+                      content: <p>{/* {props.propDetails.description} */}</p>
                     },
                     {
                       title: "Rates",

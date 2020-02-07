@@ -25,6 +25,10 @@ import HeaderLinks from "components/Header/HeaderLinks.js";
 import AdminBookings from "views/Admin/AdminBookings";
 import AdminProperties from "views/Admin/AdminProperties";
 import AdminUsers from "views/Admin/AdminUser";
+import PropRegister from "views/PropertyPages/PropRegister/RegisterPage";
+import PropMaintain from "views/PropertyPages/PropMaint/PropMain";
+
+let days;
 
 class App extends Component {
   state = {
@@ -58,7 +62,8 @@ class App extends Component {
     amendSearch: false,
     waiting: false,
     markerIndex: "",
-    showInfo: false
+    showInfo: false,
+    selectedProp: null
   };
 
   //login change handler that handles the users email and password input data.
@@ -302,7 +307,71 @@ class App extends Component {
     this.setState({ showInfo: false });
   };
 
+  setId = e => {
+    this.setState({ selectedProp: e.target.id });
+  };
+
+  confirmBooking = e => {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    let userId = localStorage.getItem("userId");
+
+    // occupation is sent along with the request to ensure that the enities availablity is updated
+    // in order to prevent duplicate bookings.
+
+    let occupation = [];
+
+    let myFirstDate = new Date(this.state.dateIn);
+    let myLastDate = new Date(this.state.dateOut);
+    let duration = parseInt((myLastDate - myFirstDate) / (1000 * 3600 * 24));
+
+    for (let i = 0; i < duration; i++) {
+      let myDate = myFirstDate.toLocaleDateString();
+      occupation.push(myDate);
+      myFirstDate = new Date(myFirstDate.setDate(myFirstDate.getDate() + 1));
+    }
+
+    //server fetch request with booking details
+    fetch("/search/finaliseBooking", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: userId,
+        propertyId: this.state.propertyDetails._id,
+        checkInDate: this.state.dateIn,
+        checkOutDate: this.state.dateOut,
+        guestCount: this.state.occupants,
+        totalBookingCost: this.state.propertyDetails.offPeakRates * days,
+        bookingDate: new Date(),
+        street: this.state.street,
+        city: this.state.city,
+        country: this.state.country,
+        postal: this.state.postal,
+        name: this.state.name,
+        email: this.state.email,
+        contact: this.state.contact1,
+        bookingArray: occupation,
+        destination: this.state.propertyDetails.city,
+        imageSrc: this.state.propertyDetails.images[0],
+        entityName: this.state.propertyDetails.name
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        this.setState({ bookingNo: result.booking }, () => {
+          //booking completed controls if the user sees the booking info capture screen
+          //or the booking confirmation screen.
+          this.setState({ bookingCompleted: true, loading: false });
+        });
+      })
+      .catch(err => console.log(err));
+  };
+
   render() {
+    console.log("Search Array=" + this.state.searchArray);
     return (
       <div>
         <Header
@@ -346,6 +415,8 @@ class App extends Component {
             )}
           />
           <Route path="/register" component={RegisterPage} />
+          <Route path="/regProperty" component={PropRegister} />
+          <Route path="/maintain" component={PropMaintain} />
           <Route
             path="/searchResults"
             render={() => (
@@ -363,6 +434,7 @@ class App extends Component {
                 openWindow={this.openWindow}
                 closeWindow={this.closeWindow}
                 showInfo={this.state.showInfo}
+                setId={this.setId}
                 propsName={
                   this.state.markerIndex === ""
                     ? "No Info"
@@ -381,7 +453,19 @@ class App extends Component {
               />
             )}
           />
-          <Route path="/propDetails" component={PropDetailsPage} />
+          <Route
+            path="/propDetails"
+            render={() => (
+              <PropDetailsPage
+                {...this.props}
+                propDetails={
+                  this.state.selectedProp === null
+                    ? null
+                    : this.state.searchArray[this.state.selectedProp]
+                }
+              />
+            )}
+          />
           <Route path="/completeBooking" component={CompleteBookingPage} />
           <Route path="/bookings" component={UserBookings} />
           <Route path="/manageBooking" component={ManageBookings} />

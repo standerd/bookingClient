@@ -90,8 +90,6 @@ export default function HeaderLinks(props) {
   const admin = localStorage.getItem("isAdmin");
   const property = localStorage.getItem("propId");
 
-  console.log("User = " + property + typeof property);
-
   let propLinks;
   let adminLinks;
   let userLinks;
@@ -112,33 +110,17 @@ export default function HeaderLinks(props) {
             }}
             buttonIcon={Apps}
             dropdownList={[
-              <Link to="/login" className={classes.dropdownLink}>
+              <Link to="/maintain" className={classes.dropdownLink}>
                 <Layers className={classes.dropdownIcons} />
-                Login
+                Maintain
               </Link>,
-              <Link to="/register" className={classes.dropdownLink}>
+              <Link to="/propBookings" className={classes.dropdownLink}>
                 <Layers className={classes.dropdownIcons} />
-                Register
+                View Bookings
               </Link>,
-              <Link to="/searchResults" className={classes.dropdownLink}>
+              <Link to="/propAccount" className={classes.dropdownLink}>
                 <Layers className={classes.dropdownIcons} />
-                Search Results
-              </Link>,
-              <Link to="/propDetails" className={classes.dropdownLink}>
-                <Layers className={classes.dropdownIcons} />
-                Property Details
-              </Link>,
-              <Link to="/completeBooking" className={classes.dropdownLink}>
-                <Layers className={classes.dropdownIcons} />
-                Finalise Booking
-              </Link>,
-              <Link to="/bookings" className={classes.dropdownLink}>
-                <Layers className={classes.dropdownIcons} />
-                User Bookings
-              </Link>,
-              <Link to="/propContact" className={classes.dropdownLink}>
-                <Layers className={classes.dropdownIcons} />
-                Property Contact
+                Property Account
               </Link>
             ]}
           />

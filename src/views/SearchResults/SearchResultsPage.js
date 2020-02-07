@@ -72,6 +72,7 @@ export default function EcommercePage(props) {
           propsName={props.propsName}
           propsLat={props.propsLat}
           propsLng={props.propsLng}
+          setId={props.setId}
         />
       </div>
       <div

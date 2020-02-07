@@ -38,7 +38,7 @@ export default function SectionProducts(props) {
           No Properties Found
         </h3>
       ))
-    : (property = props.markerArray.map(key => {
+    : (property = props.markerArray.map((key, index) => {
         return (
           <GridItem key={key._id} md={4} sm={4}>
             <Card plain product>
@@ -66,7 +66,11 @@ export default function SectionProducts(props) {
                   classes={{ tooltip: classes.tooltip }}
                 >
                   <Link to="/propDetails" style={{ color: "#00acc1" }}>
-                    <Favorite style={{ fontSize: "1.3rem" }} />
+                    <Favorite
+                      id={index}
+                      onClick={props.setId}
+                      style={{ fontSize: "1.3rem" }}
+                    />
                   </Link>
                 </Tooltip>
               </CardFooter>
