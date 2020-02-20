@@ -20,16 +20,123 @@ import CardBody from "components/Card/CardBody.js";
 
 import shoppingCartStyle from "assets/jss/material-kit-pro-react/views/shoppingCartStyle.js";
 
-import product1 from "assets/images/image1.jpg";
-
 const useStyles = makeStyles(shoppingCartStyle);
 
-export default function ShoppingCartPage() {
+let moment = require("moment");
+moment.updateLocale("en", {
+  longDateFormat: {
+    LT: "h:mm A",
+    LTS: "h:mm:ss A",
+    L: "DD/MM/YYYY",
+    l: "DD/MM/YYYY",
+    LL: "Do MMMM YYYY",
+    ll: "D MMM YYYY",
+    LLL: "Do MMMM YYYY LT",
+    lll: "D MMM YYYY LT",
+    LLLL: "dddd, MMMM Do YYYY LT",
+    llll: "ddd, MMM D YYYY LT"
+  }
+});
+
+export default function ShoppingCartPage(props) {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
   });
   const classes = useStyles();
+
+  let myFirstDate = new Date(moment(props.dateIn, "DD-MM-YYYY"));
+  let myLastDate = new Date(moment(props.dateOut, "DD-MM-YYYY"));
+  let duration = parseInt((myLastDate - myFirstDate) / (1000 * 3600 * 24));
+
+  let totalCost = parseInt("1200") * duration;
+
+  console.log(duration + " and " + typeof duration);
+
+  let bookingScreen = (
+    <div className={classes.container}>
+      <Card plain>
+        <CardBody plain>
+          <h3 className={classes.cardTitle}>Booking Details</h3>
+          <Table
+            tableHead={[
+              "",
+              "PROPERTY",
+              "CHECK IN",
+              "CHECK OUT",
+              "GUESTS",
+              "NIGHTS",
+              "PER NIGHT"
+            ]}
+            tableData={[
+              [
+                <div className={classes.imgContainer} key={1}>
+                  <img
+                    src={props.bookingDetails.images[0]}
+                    alt="..."
+                    className={classes.img}
+                  />
+                </div>,
+                <span key={1}>
+                  {props.bookingDetails === null
+                    ? null
+                    : props.bookingDetails.name}
+                  <br />
+                  <small className={classes.tdNameSmall}>{props.city}</small>
+                </span>,
+                props.dateIn,
+                props.dateOut,
+                <span key={1}>{props.guests}</span>,
+                <span key={1}>{duration}</span>,
+                <span key={1}>R {props.bookingDetails.rates}.00</span>
+              ],
+
+              {
+                purchase: true,
+                colspan: 3,
+                amount: <span>R{totalCost}.00</span>,
+                col: {
+                  colspan: 2,
+                  text: (
+                    <Button color="info" round onClick={props.confirmBooking}>
+                      Finalise Booking <KeyboardArrowRight />
+                    </Button>
+                  )
+                }
+              }
+            ]}
+            tableShopping
+            customHeadCellClasses={[
+              classes.textCenter,
+              classes.description,
+              classes.description,
+              classes.textRight,
+              classes.textRight,
+              classes.textRight
+            ]}
+            customHeadClassesForCells={[0, 2, 3, 4, 5, 6]}
+            customCellClasses={[
+              classes.tdName,
+              classes.customFont,
+              classes.customFont,
+              classes.tdNumber,
+              classes.tdNumber + " " + classes.tdNumberAndButtonGroup,
+              classes.tdNumber + " " + classes.textRight
+            ]}
+            customClassesForCells={[1, 2, 3, 4, 5, 6]}
+          />
+        </CardBody>
+      </Card>
+    </div>
+  );
+
+  let confirmBooking = (
+    <div>
+      <h3>Thanks for your Booking</h3>
+      <h3>Your Booking Ref Is : {props.bookingNumber}</h3>
+    </div>
+  );
+
   return (
     <div>
       <Header
@@ -65,76 +172,8 @@ export default function ShoppingCartPage() {
         style={{ padding: "2%" }}
         className={classNames(classes.main, classes.mainRaised)}
       >
-        <div className={classes.container}>
-          <Card plain>
-            <CardBody plain>
-              <h3 className={classes.cardTitle}>Booking Details</h3>
-              <Table
-                tableHead={[
-                  "",
-                  "PROPERTY",
-                  "CHECK IN",
-                  "CHECK OUT",
-                  "GUESTS",
-                  "NIGHTS",
-                  "PER NIGHT"
-                ]}
-                tableData={[
-                  [
-                    <div className={classes.imgContainer} key={1}>
-                      <img src={product1} alt="..." className={classes.img} />
-                    </div>,
-                    <span key={1}>
-                      Hotel Transalvania
-                      <br />
-                      <small className={classes.tdNameSmall}>
-                        Johannesburg, South Africa
-                      </small>
-                    </span>,
-                    "24/11/2019",
-                    "27/11/2019",
-                    <span key={1}>2</span>,
-                    <span key={1}>3</span>,
-                    <span key={1}>R 549.00</span>
-                  ],
-
-                  {
-                    purchase: true,
-                    colspan: "3",
-                    amount: <span>R 2 346.00</span>,
-                    col: {
-                      colspan: 3,
-                      text: (
-                        <Button color="info" round>
-                          Finalise Booking <KeyboardArrowRight />
-                        </Button>
-                      )
-                    }
-                  }
-                ]}
-                tableShopping
-                customHeadCellClasses={[
-                  classes.textCenter,
-                  classes.description,
-                  classes.description,
-                  classes.textRight,
-                  classes.textRight,
-                  classes.textRight
-                ]}
-                customHeadClassesForCells={[0, 2, 3, 4, 5, 6]}
-                customCellClasses={[
-                  classes.tdName,
-                  classes.customFont,
-                  classes.customFont,
-                  classes.tdNumber,
-                  classes.tdNumber + " " + classes.tdNumberAndButtonGroup,
-                  classes.tdNumber + " " + classes.textRight
-                ]}
-                customClassesForCells={[1, 2, 3, 4, 5, 6]}
-              />
-            </CardBody>
-          </Card>
-        </div>
+        {bookingScreen}
+        {props.bookingNumber === null ? null : confirmBooking}
       </div>
       <br />
       <Footer

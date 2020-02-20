@@ -52,11 +52,32 @@ moment.updateLocale("en", {
 });
 
 export default function SectionPricing(props) {
+  const [initialIn, setInitialIn] = React.useState("28/02/2020");
+  const [initialOut, setInitialOut] = React.useState("01/03/2020");
+  const [guests, setGuests] = React.useState("2");
+
   const classes = useStyles();
   let yesterday = Datetime.moment().subtract(1, "day");
   var inLimit = function(current) {
     return current.isAfter(yesterday);
   };
+  var outLimit = function(current) {
+    return current.isAfter(moment(initialIn, "DD-MM-YYYY"));
+  };
+
+  const onDateChange = (name, value) => {
+    if (name === "dateIn") {
+      setInitialIn(value.toLocaleDateString());
+      setInitialOut("");
+    } else {
+      setInitialOut(value.toLocaleDateString());
+    }
+  };
+
+  const changeGuests = e => {
+    setGuests(e.target.value);
+  };
+
   return (
     <div className={classes.pricingSection}>
       <h2 className={classes.title}>Ammend Booking Details</h2>
@@ -80,11 +101,11 @@ export default function SectionPricing(props) {
                   <br />
                   <FormControl fullWidth>
                     <Datetime
-                      defaultValue="28/11/2019"
+                      value={initialIn}
                       timeFormat={false}
                       isValidDate={inLimit}
                       closeOnSelect={true}
-                      onChange={result => console.log(result)}
+                      onChange={result => onDateChange("dateIn", result._d)}
                       inputProps={{ placeholder: "From" }}
                     />
                   </FormControl>
@@ -97,11 +118,11 @@ export default function SectionPricing(props) {
                   <br />
                   <FormControl fullWidth>
                     <Datetime
-                      defaultValue="30/11/2019"
+                      value={initialOut}
                       timeFormat={false}
-                      isValidDate={inLimit}
+                      isValidDate={outLimit}
                       closeOnSelect={true}
-                      onChange={result => console.log(result)}
+                      onChange={result => onDateChange("dateOut", result._d)}
                       inputProps={{ placeholder: "From" }}
                     />
                   </FormControl>
@@ -119,7 +140,8 @@ export default function SectionPricing(props) {
                       inputProps={{
                         type: "number",
                         min: 1,
-                        value: props.noOfGuests,
+                        value: guests,
+                        onChange: changeGuests,
                         endAdornment: (
                           <InputAdornment position="end">
                             <People />

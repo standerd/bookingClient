@@ -66,7 +66,7 @@ export default function SectionProducts(props) {
                   Check Out: {key.checkOutDate}
                 </p>
                 <p className={classes.description}>
-                  Total Cost: {key.totalBookingCost}
+                  Total Cost: R {key.totalBookingCost}.00
                 </p>
                 <p className={classes.description}>Guests: {key.guestCount}</p>
               </CardBody>
@@ -77,7 +77,12 @@ export default function SectionProducts(props) {
                   placement="left"
                   classes={{ tooltip: classes.tooltip }}
                 >
-                  <Link to="/manageBooking">
+                  <Link
+                    to={{
+                      pathname: "/manageBooking",
+                      query: { data1: key._id }
+                    }}
+                  >
                     <Button
                       style={{ fontWeight: "bold" }}
                       size="sm"
@@ -96,7 +101,13 @@ export default function SectionProducts(props) {
                   placement="left"
                   classes={{ tooltip: classes.tooltip }}
                 >
-                  <Link to="/propContact" style={{ color: "#00acc1" }}>
+                  <Link
+                    to={{
+                      pathname: "/propContact",
+                      query: { propId: key.propertyId , bookId: key._id}
+                    }}
+                    style={{ color: "#00acc1" }}
+                  >
                     <Button
                       style={{ fontWeight: "bold" }}
                       size="sm"
@@ -118,10 +129,6 @@ export default function SectionProducts(props) {
   return (
     <div className={classes.section}>
       <div className={classes.container}>
-        <br></br>
-        <br></br>
-        <br></br>
-
         <h2 style={{ textAlign: "center" }}>My Bookings</h2>
         <GridContainer>
           <GridItem md={12} sm={12}>

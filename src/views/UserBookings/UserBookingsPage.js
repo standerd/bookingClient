@@ -22,7 +22,7 @@ export default function EcommercePage() {
   const classes = useStyles();
   return (
     <div>
-      <div className={classNames(classes.main, classes.mainRaised)}>
+      <div className={classNames(classes.main, classes.mainRaised)} style={{marginTop: "100px"}}>
         <SectionBookings />
       </div>
 

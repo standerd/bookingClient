@@ -18,18 +18,19 @@ import pricingStyle from "assets/jss/material-kit-pro-react/views/pricingStyle.j
 
 const useStyles = makeStyles(pricingStyle);
 
-export default function PricingPage() {
+export default function PricingPage(props) {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
   });
   const classes = useStyles();
+
+  console.log(props.location.query);
   return (
     <div>
       <Header
         brand="Traveller"
         links={<HeaderLinks dropdownHoverColor="info" />}
-        fixed
         color="transparent"
         changeColorOnScroll={{
           height: 200,

@@ -32,89 +32,134 @@ import KEY from "../../config/keys";
 
 import contactUsStyle from "assets/jss/material-kit-pro-react/views/contactUsStyle.js";
 
-const CustomSkinMap = withScriptjs(
-  withGoogleMap(() => (
-    <GoogleMap
-      defaultZoom={14}
-      defaultCenter={{ lat: 44.43353, lng: 26.093928 }}
-      defaultOptions={{
-        scrollwheel: false,
-        zoomControl: true,
-        styles: [
-          {
-            featureType: "water",
-            stylers: [
-              { saturation: 43 },
-              { lightness: -11 },
-              { hue: "#0088ff" }
-            ]
-          },
-          {
-            featureType: "road",
-            elementType: "geometry.fill",
-            stylers: [
-              { hue: "#ff0000" },
-              { saturation: -100 },
-              { lightness: 99 }
-            ]
-          },
-          {
-            featureType: "road",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#808080" }, { lightness: 54 }]
-          },
-          {
-            featureType: "landscape.man_made",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#ece2d9" }]
-          },
-          {
-            featureType: "poi.park",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#ccdca1" }]
-          },
-          {
-            featureType: "road",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#767676" }]
-          },
-          {
-            featureType: "road",
-            elementType: "labels.text.stroke",
-            stylers: [{ color: "#ffffff" }]
-          },
-          { featureType: "poi", stylers: [{ visibility: "off" }] },
-          {
-            featureType: "landscape.natural",
-            elementType: "geometry.fill",
-            stylers: [{ visibility: "on" }, { color: "#b8cb93" }]
-          },
-          { featureType: "poi.park", stylers: [{ visibility: "on" }] },
-          {
-            featureType: "poi.sports_complex",
-            stylers: [{ visibility: "on" }]
-          },
-          { featureType: "poi.medical", stylers: [{ visibility: "on" }] },
-          {
-            featureType: "poi.business",
-            stylers: [{ visibility: "simplified" }]
-          }
-        ]
-      }}
-    >
-      <Marker position={{ lat: 44.43353, lng: 26.093928 }} />
-    </GoogleMap>
-  ))
-);
-
 const useStyles = makeStyles(contactUsStyle);
 
-export default function ContactUsPage() {
+export default function ContactUsPage(props) {
+  const [propertyDetails, setPropertyDetails] = React.useState("");
+  const [message, setMessage] = React.useState("");
+
+  let property = props.location.query.propId;
+  let booking = props.location.query.bookId;
+  const userId = localStorage.getItem("userId");
+
+  console.log(property);
+  console.log(message);
   React.useEffect(() => {
+    fetch(`http://localhost:3001/search/getProperty/${property}`)
+      .then(res => res.json())
+      .then(result => {
+        setPropertyDetails(result.details);
+      })
+      .catch(err => console.log(err));
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
-  });
+  }, []);
   const classes = useStyles();
+
+  const CustomSkinMap = withScriptjs(
+    withGoogleMap(() => (
+      <GoogleMap
+        defaultZoom={14}
+        defaultCenter={{
+          lat: parseInt(propertyDetails.lat),
+          lng: parseInt(propertyDetails.long)
+        }}
+        defaultOptions={{
+          scrollwheel: false,
+          zoomControl: true,
+          styles: [
+            {
+              featureType: "water",
+              stylers: [
+                { saturation: 43 },
+                { lightness: -11 },
+                { hue: "#0088ff" }
+              ]
+            },
+            {
+              featureType: "road",
+              elementType: "geometry.fill",
+              stylers: [
+                { hue: "#ff0000" },
+                { saturation: -100 },
+                { lightness: 99 }
+              ]
+            },
+            {
+              featureType: "road",
+              elementType: "geometry.stroke",
+              stylers: [{ color: "#808080" }, { lightness: 54 }]
+            },
+            {
+              featureType: "landscape.man_made",
+              elementType: "geometry.fill",
+              stylers: [{ color: "#ece2d9" }]
+            },
+            {
+              featureType: "poi.park",
+              elementType: "geometry.fill",
+              stylers: [{ color: "#ccdca1" }]
+            },
+            {
+              featureType: "road",
+              elementType: "labels.text.fill",
+              stylers: [{ color: "#767676" }]
+            },
+            {
+              featureType: "road",
+              elementType: "labels.text.stroke",
+              stylers: [{ color: "#ffffff" }]
+            },
+            { featureType: "poi", stylers: [{ visibility: "off" }] },
+            {
+              featureType: "landscape.natural",
+              elementType: "geometry.fill",
+              stylers: [{ visibility: "on" }, { color: "#b8cb93" }]
+            },
+            { featureType: "poi.park", stylers: [{ visibility: "on" }] },
+            {
+              featureType: "poi.sports_complex",
+              stylers: [{ visibility: "on" }]
+            },
+            { featureType: "poi.medical", stylers: [{ visibility: "on" }] },
+            {
+              featureType: "poi.business",
+              stylers: [{ visibility: "simplified" }]
+            }
+          ]
+        }}
+      >
+        <Marker
+          position={{
+            lat: parseInt(propertyDetails.lat),
+            lng: parseInt(propertyDetails.long)
+          }}
+        />
+      </GoogleMap>
+    ))
+  );
+
+  const messageSet = e => {
+    setMessage(e.target.value);
+  };
+
+  const sendMessage = e => {
+    e.preventDefault();
+    fetch("http://localhost:3001/search/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: message,
+        userID: userId,
+        bookID: booking
+      })
+    })
+      .then(res => res.json())
+      .catch(err => console.log(err));
+  };
+
   return (
     <div>
       <Header
@@ -153,27 +198,6 @@ export default function ContactUsPage() {
                 </p>
                 <form>
                   <CustomInput
-                    labelText="Your Name"
-                    id="float"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                  <CustomInput
-                    labelText="Email address"
-                    id="float"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                  <CustomInput
-                    labelText="Phone"
-                    id="float"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                  <CustomInput
                     labelText="Your message"
                     id="float"
                     formControlProps={{
@@ -181,11 +205,13 @@ export default function ContactUsPage() {
                     }}
                     inputProps={{
                       multiline: true,
-                      rows: 6
+                      rows: 6,
+                      value: message,
+                      onChange: messageSet
                     }}
                   />
                   <div className={classes.textCenter}>
-                    <Button color="primary" round>
+                    <Button color="primary" round onClick={sendMessage}>
                       Send
                     </Button>
                   </div>
@@ -197,8 +223,9 @@ export default function ContactUsPage() {
                   title="Property Location"
                   description={
                     <p>
-                      Bld Mihail Kogalniceanu, nr. 8, <br /> 7652 Bucharest,{" "}
-                      <br /> Romania
+                      {propertyDetails.street}, <br /> {propertyDetails.suburb},{" "}
+                      <br /> {propertyDetails.city}, <br />{" "}
+                      {propertyDetails.country}
                     </p>
                   }
                   icon={PinDrop}
@@ -209,8 +236,8 @@ export default function ContactUsPage() {
                   title="Property Contact Details"
                   description={
                     <p>
-                      Michael Jordan <br /> +40 762 321 762 <br /> Mon - Fri,
-                      8:00-22:00
+                      {propertyDetails.telNo} <br /> {propertyDetails.altNo}{" "}
+                      <br /> Mon - Sun, 8:00-22:00
                     </p>
                   }
                   icon={Phone}
@@ -221,8 +248,8 @@ export default function ContactUsPage() {
                   title="Legal Information"
                   description={
                     <p>
-                      Creative Tim Ltd. <br /> VAT · EN2341241 <br /> IBAN ·
-                      EN8732ENGB2300099123 <br /> Bank · Great Britain Bank
+                      {propertyDetails.name}, <br /> Banking Details: Please
+                      Request
                     </p>
                   }
                   icon={BusinessCenter}

@@ -217,7 +217,7 @@ export default function HeaderLinks(props) {
       {adminLinks}
       {logout}
 
-      <ListItem className={classes.listItem}>
+      {/* <ListItem className={classes.listItem}>
         <CustomDropdown
           noLiPadding
           navDropdown
@@ -287,8 +287,8 @@ export default function HeaderLinks(props) {
             </Link>
           ]}
         />
-      </ListItem>
-      <ListItem className={classes.listItem}>
+      </ListItem> */}
+      {/* <ListItem className={classes.listItem}>
         <CustomDropdown
           noLiPadding
           navDropdown
@@ -341,7 +341,7 @@ export default function HeaderLinks(props) {
             </Link>
           ]}
         />
-      </ListItem>
+      </ListItem> */}
     </List>
   );
 }

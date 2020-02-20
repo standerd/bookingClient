@@ -56,14 +56,14 @@ export default function GoogleMaps(props) {
           >
             <div
               style={{
-                background: `rgba(8, 8, 8, 0.8)`,
+                background: `rgba(8, 8, 8, 0.2)`,
                 border: `1px solid white`,
                 color: "white",
-                fontSize: " 0.5rem",
+                fontSize: " 0.1rem",
                 padding: 5
               }}
             >
-              <h1>{props.propsName}</h1>
+              <h4>{props.propsName}</h4>
             </div>
           </InfoWindow>
         ) : null}

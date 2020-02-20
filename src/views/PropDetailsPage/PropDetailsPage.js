@@ -24,21 +24,28 @@ import Accordion from "components/Accordion/Accordion.js";
 import productStyle from "assets/jss/material-kit-pro-react/views/productStyle.js";
 
 // images
-const product1 = "http://localhost:3001/images/image1.jpg";
-const product3 = "http://localhost:3001/images/image2.jpg";
-const product4 = "http://localhost:3001/images/image3.jpg";
-
-const imagesArray = [product1, product4, product3];
 
 const useStyles = makeStyles(productStyle);
 
 export default function ProductPage(props) {
+  let imagesArray = [];
+
+  props.propDetails !== null ? (imagesArray = props.propDetails.images) : [];
+
   const classes = useStyles();
   const images = imagesArray.map(key => {
     return { original: key, thumbnail: key };
   });
 
-  console.log("Props given to details " + props.propDetails);
+  let facilities;
+
+  props.propDetails === null
+    ? (facilities = <li>No Facilities Loaded</li>)
+    : (facilities = props.propDetails.facilities.map(key => (
+        <li key={key}>{key}</li>
+      )));
+
+  
   return (
     <div className={classes.productPage}>
       <Header
@@ -76,32 +83,36 @@ export default function ProductPage(props) {
                   collapses={[
                     {
                       title: "Description",
-                      content: <p>{/* {props.propDetails.description} */}</p>
+                      content: (
+                        <p>
+                          {props.propDetails === null
+                            ? "No Description"
+                            : props.propDetails.description}
+                        </p>
+                      )
                     },
                     {
                       title: "Rates",
-                      content: <p>Peak Rates: R 1 200.00 per night/room</p>
+                      content: (
+                        <p>
+                          Rates: R{" "}
+                          {props.propDetails === null
+                            ? "No Rates Loaded"
+                            : props.propDetails.rates}
+                          .00 per night/room
+                        </p>
+                      )
                     },
                     {
                       title: "Facilities",
-                      content: (
-                        <ul>
-                          <li>Concierge Service</li>
-                          <li>Free Wifi</li>
-                          <li>Bicycle Rental</li>
-                          <li>Room Service</li>
-                          <li>Airport Transfer</li>
-                          <li>Swimming Pool</li>
-                          <li>Tea/Coffee Facilities</li>
-                        </ul>
-                      )
+                      content: <ul>{facilities}</ul>
                     }
                   ]}
                 />
                 <GridContainer className={classes.pullRight}>
                   <Link to="/completeBooking">
-                    <Button round color="rose">
-                      Book Property &nbsp; <ShoppingCart />
+                    <Button round color="rose" style={{ marginRight: "12px" }}>
+                      Book &nbsp; <ShoppingCart />
                     </Button>
                   </Link>
                 </GridContainer>

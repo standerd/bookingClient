@@ -29,6 +29,21 @@ import PropRegister from "views/PropertyPages/PropRegister/RegisterPage";
 import PropMaintain from "views/PropertyPages/PropMaint/PropMain";
 
 let days;
+let moment = require("moment");
+moment.updateLocale("en", {
+  longDateFormat: {
+    LT: "h:mm A",
+    LTS: "h:mm:ss A",
+    L: "DD/MM/YYYY",
+    l: "DD/MM/YYYY",
+    LL: "Do MMMM YYYY",
+    ll: "D MMM YYYY",
+    LLL: "Do MMMM YYYY LT",
+    lll: "D MMM YYYY LT",
+    LLLL: "dddd, MMMM Do YYYY LT",
+    llll: "ddd, MMM D YYYY LT"
+  }
+});
 
 class App extends Component {
   state = {
@@ -63,12 +78,13 @@ class App extends Component {
     waiting: false,
     markerIndex: "",
     showInfo: false,
-    selectedProp: null
+    selectedProp: null,
+    bookingNo: null,
+    bookingSubmitted: false
   };
 
   //login change handler that handles the users email and password input data.
   loginChangeHandler = name => e => {
-    console.log(e.target.value);
     this.setState({ [name]: e.target.value });
   };
 
@@ -260,8 +276,10 @@ class App extends Component {
   //sent to the server as a POST request and the returned data is set to state.
   handleSearchSubmit = e => {
     e.preventDefault();
-    this.setState({ waiting: true });
-    this.state.city === ""
+    if(this.state.dateOut == "") {
+      return;
+    }
+    this.setState({ waiting: true })
       ? this.setState({ valid: false })
       : fetch("/search/searchProperty", {
           method: "POST",
@@ -307,13 +325,14 @@ class App extends Component {
     this.setState({ showInfo: false });
   };
 
-  setId = e => {
-    this.setState({ selectedProp: e.target.id });
+  setId = index => {
+    this.setState({ selectedProp: index });
   };
 
   confirmBooking = e => {
+    console.log("Booking Submitted");
     e.preventDefault();
-    this.setState({ loading: true });
+    this.setState({ bookingSubmitted: true });
 
     let userId = localStorage.getItem("userId");
 
@@ -322,8 +341,8 @@ class App extends Component {
 
     let occupation = [];
 
-    let myFirstDate = new Date(this.state.dateIn);
-    let myLastDate = new Date(this.state.dateOut);
+    let myFirstDate = new Date(moment(this.state.dateIn, "DD-MM-YYYY"));
+    let myLastDate = new Date(moment(this.state.dateOut, "DD-MM-YYYY"));
     let duration = parseInt((myLastDate - myFirstDate) / (1000 * 3600 * 24));
 
     for (let i = 0; i < duration; i++) {
@@ -340,23 +359,18 @@ class App extends Component {
       },
       body: JSON.stringify({
         userId: userId,
-        propertyId: this.state.propertyDetails._id,
+        propertyId: this.state.searchArray[this.state.selectedProp]._id,
         checkInDate: this.state.dateIn,
         checkOutDate: this.state.dateOut,
-        guestCount: this.state.occupants,
-        totalBookingCost: this.state.propertyDetails.offPeakRates * days,
+        guestCount: this.state.noOfGuests,
+        totalBookingCost: parseInt(
+          this.state.searchArray[this.state.selectedProp].rates * duration
+        ),
         bookingDate: new Date(),
-        street: this.state.street,
-        city: this.state.city,
-        country: this.state.country,
-        postal: this.state.postal,
-        name: this.state.name,
-        email: this.state.email,
-        contact: this.state.contact1,
         bookingArray: occupation,
-        destination: this.state.propertyDetails.city,
-        imageSrc: this.state.propertyDetails.images[0],
-        entityName: this.state.propertyDetails.name
+        destination: this.state.city,
+        imageSrc: this.state.searchArray[this.state.selectedProp].images[0],
+        entityName: this.state.searchArray[this.state.selectedProp].name
       })
     })
       .then(res => res.json())
@@ -364,14 +378,13 @@ class App extends Component {
         this.setState({ bookingNo: result.booking }, () => {
           //booking completed controls if the user sees the booking info capture screen
           //or the booking confirmation screen.
-          this.setState({ bookingCompleted: true, loading: false });
+          this.setState({ bookingSubmitted: false });
         });
       })
       .catch(err => console.log(err));
   };
 
   render() {
-    console.log("Search Array=" + this.state.searchArray);
     return (
       <div>
         <Header
@@ -397,7 +410,7 @@ class App extends Component {
           <Route path="/sections" component={SectionsPage} />
           <Route path="/landing" component={LandingPage} />
           <Route path="/error-page" component={ErrorPage} />
-          <Route path="/profile-page" component={ProfilePage} />
+          <Route path="/myAccount" component={ProfilePage} />
           <Route
             path="/login"
             render={() => (
@@ -466,7 +479,26 @@ class App extends Component {
               />
             )}
           />
-          <Route path="/completeBooking" component={CompleteBookingPage} />
+          <Route
+            path="/completeBooking"
+            render={() => (
+              <CompleteBookingPage
+                {...this.props}
+                bookingDetails={
+                  this.state.selectedProp === null
+                    ? null
+                    : this.state.searchArray[this.state.selectedProp]
+                }
+                dateIn={this.state.dateIn}
+                dateOut={this.state.dateOut}
+                guests={this.state.noOfGuests}
+                city={this.state.city}
+                bookingNumber={this.state.bookingNo}
+                confirmBooking={this.confirmBooking}
+                confirmed={this.state.bookingSubmitted}
+              />
+            )}
+          />
           <Route path="/bookings" component={UserBookings} />
           <Route path="/manageBooking" component={ManageBookings} />
           <Route path="/propContact" component={PropContactPage} />
