@@ -52,12 +52,31 @@ moment.updateLocale("en", {
 });
 
 export default function SectionPricing(props) {
-  const [initialIn, setInitialIn] = React.useState("28/02/2020");
-  const [initialOut, setInitialOut] = React.useState("01/03/2020");
-  const [guests, setGuests] = React.useState("2");
-
+  let occupation = [];
   const classes = useStyles();
+
+  const [initialIn, setInitialIn] = React.useState();
+  const [initialOut, setInitialOut] = React.useState();
+  const [guests, setGuests] = React.useState();
+  const [oldIn, setOldIn] = React.useState();
+  const [oldOut, setOldOut] = React.useState();
+  const [processing, setProcessing] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  const [unavailable, setUnavailable] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [success2, setSuccess2] = React.useState(false);
+  const [processing2, setProcessing2] = React.useState(false);
+
+  React.useEffect(() => {
+    setInitialIn(props.booking.checkInDate);
+    setInitialOut(props.booking.checkOutDate);
+    setOldIn(props.booking.checkInDate);
+    setOldOut(props.booking.checkOutDate);
+    setGuests(props.booking.guestCount);
+  }, [props.booking]);
+
   let yesterday = Datetime.moment().subtract(1, "day");
+
   var inLimit = function(current) {
     return current.isAfter(yesterday);
   };
@@ -65,10 +84,119 @@ export default function SectionPricing(props) {
     return current.isAfter(moment(initialIn, "DD-MM-YYYY"));
   };
 
+  const deleteBooking = () => {
+    setProcessing2(true);
+    let myFirstDate = new Date(moment(initialIn, "DD-MM-YYYY"));
+    let myLastDate = new Date(moment(initialOut, "DD-MM-YYYY"));
+    let duration = parseInt((myLastDate - myFirstDate) / (1000 * 3600 * 24));
+
+    for (let i = 0; i < duration; i++) {
+      let myDate = myFirstDate.toLocaleDateString();
+      occupation.push(myDate);
+      myFirstDate = new Date(myFirstDate.setDate(myFirstDate.getDate() + 1));
+    }
+
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/removeBooking",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          bookingID: props.booking._id,
+          occupation: occupation,
+          entityID: props.booking.propertyId
+        })
+      }
+    ).then(res => {
+      setProcessing2(false);
+      setSuccess2(true);
+    });
+  };
+
+  const ammendBooking = () => {
+    setProcessing(true);
+    let currentOcc = [];
+
+    let currentIn = new Date(moment(oldIn, "DD-MM-YYYY"));
+    let currentOut = new Date(moment(oldOut, "DD-MM-YYYY"));
+    let currDur = parseInt((currentOut - currentIn) / (1000 * 3600 * 24));
+
+    for (let i = 0; i < currDur; i++) {
+      let myDate2 = currentIn.toLocaleDateString();
+      currentOcc.push(myDate2);
+      currentIn = new Date(currentIn.setDate(currentIn.getDate() + 1));
+    }
+
+    //for the ammending of the booking the entity which held the booking has to have their availability
+    //updated, the below function puts the full date range in an array that get sent to the server to update.
+    let occupation = [];
+
+    let myFirstDate = new Date(moment(initialIn, "DD-MM-YYYY"));
+    let myLastDate = new Date(moment(initialOut, "DD-MM-YYYY"));
+    let duration = parseInt((myLastDate - myFirstDate) / (1000 * 3600 * 24));
+
+    for (let i = 0; i < duration; i++) {
+      let myDate = myFirstDate.toLocaleDateString();
+      occupation.push(myDate);
+      myFirstDate = new Date(myFirstDate.setDate(myFirstDate.getDate() + 1));
+    }
+
+    //fetch request is sent to the server to ammend the booking
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/ammendBooking",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          bookingID: props.booking._id,
+          occupation: occupation,
+          currentOcc: currentOcc,
+          duration: duration,
+          checkIn: initialIn,
+          checkOut: initialOut,
+          guestCount: guests,
+          entityID: props.booking.propertyId
+        })
+      }
+    )
+      .then(res => {
+        if (res.status === 404) {
+          setUnavailable(true);
+          setProcessing(false);
+          setSuccess(false);
+          throw new Error();
+        } else if (res.status === 500) {
+          setError(true);
+          throw new Error();
+        }
+        return res.json();
+      })
+
+      .then(resData => {
+        setError(false);
+        setProcessing(false);
+        setSuccess(true);
+        setUnavailable(false);
+      })
+      .catch(err => {
+        console.log(err);
+        setError(true);
+      });
+  };
+
   const onDateChange = (name, value) => {
     if (name === "dateIn") {
       setInitialIn(value.toLocaleDateString());
-      setInitialOut("");
+      Date.prototype.addDays = function(days) {
+        var date = new Date(this.valueOf());
+        date.setDate(date.getDate() + days);
+        return date;
+      };
+      setInitialOut(new Date(moment(initialIn, "DD-MM-YYYY")).addDays(1));
     } else {
       setInitialOut(value.toLocaleDateString());
     }
@@ -132,7 +260,6 @@ export default function SectionPricing(props) {
                   <InputLabel className={classes.label}>Guests</InputLabel>
                   <FormControl fullWidth>
                     <CustomInput
-                      labelText="# of"
                       id="material"
                       formControlProps={{
                         fullWidth: true
@@ -154,14 +281,29 @@ export default function SectionPricing(props) {
                 <GridItem md={2} sm={2}>
                   <br></br>
                   <br></br>
-                  <Button href="#pablo" color="info" round size="sm">
-                    Submit Changes
+                  <Button onClick={ammendBooking} color="info" round size="sm">
+                    {processing ? "Processing ..." : "Submit Changes"}
                   </Button>
                   <p> Or</p>
-                  <Button href="#pablo" color="rose" round size="sm">
-                    Cancel Booking
+                  <Button onClick={deleteBooking} color="rose" round size="sm">
+                    {processing2 ? "Processing ..." : "Cancel Booking"}
                   </Button>
                 </GridItem>
+                <h4 style={{ color: "green" }}>
+                  {success
+                    ? "Change processed successfully, please click on the left to go back to bookings"
+                    : null}
+                </h4>
+                <h4 style={{ color: "green" }}>
+                  {success2
+                    ? "Booking Deleted successfully, please click on the left to go back to bookings"
+                    : null}
+                </h4>
+                <h4 style={{ color: "red" }}>
+                  {unavailable
+                    ? "Dates are not available, please select different dates or make a new booking"
+                    : null}
+                </h4>
               </GridContainer>
             </CardBody>
           </Card>
@@ -169,6 +311,7 @@ export default function SectionPricing(props) {
         <GridItem md={1} sm={1}>
           <Card plain pricing></Card>
         </GridItem>
+
         <Link style={{ color: "#e91e63", fontWeight: "bold" }} to="/bookings">
           Back To Bookings
         </Link>

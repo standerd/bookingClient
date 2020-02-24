@@ -33,7 +33,7 @@ export default function LoginPage(props) {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
   });
-  const myError = false
+  const myError = false;
   const classes = useStyles();
   return (
     <div>
@@ -76,15 +76,16 @@ export default function LoginPage(props) {
                         id="email"
                         formControlProps={{
                           fullWidth: true,
-                          required: true,
+                          required: true
                         }}
                         inputProps={{
+                          onSubmit: props.loginHandler,
                           placeholder: "Email...",
                           type: "email",
                           onChange: props.changeHandler("email"),
                           value: props.email,
                           required: true,
-                          error: myError === false ? true : false,
+                          error: myError ? true : false,
                           startAdornment: (
                             <InputAdornment position="start">
                               <Email className={classes.inputIconsColor} />

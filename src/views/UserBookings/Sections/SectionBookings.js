@@ -16,9 +16,9 @@ import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 import Button from "components/CustomButtons/Button.js";
 
-import suit1 from "assets/images/image1.jpg";
-
 import styles from "assets/jss/material-kit-pro-react/views/ecommerceSections/productsStyle.js";
+
+import "../../Admin/cssSpinner.css";
 
 const useStyles = makeStyles(styles);
 
@@ -27,30 +27,47 @@ export default function SectionProducts(props) {
   const token = localStorage.getItem("token");
   let bookingDisplay;
   const [bookings, setBookings] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/search/myBookings", {
-      headers: {
-        Authorization: "Bearer " + token
+    setLoading(true);
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/myBookings",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
       }
-    })
+    )
       .then(res => res.json())
       .then(result => {
         setBookings(result.bookings);
+        setLoading(false);
+      })
+      .catch(err => {
+        setBookings(null);
+        setLoading(false);
       });
-  }, []);
+  }, [token]);
 
-  console.log(bookings);
+  let display;
+
+  loading
+    ? (display = <div className="loader">Loading...</div>)
+    : (display = null);
 
   bookings === null
-    ? (bookingDisplay = null)
+    ? (bookingDisplay = <p>You do not have any bookings to display</p>)
     : (bookingDisplay = bookings.map((key, index) => {
         return (
           <GridItem key={index} md={4} sm={4}>
             <Card plain product>
               <CardHeader noShadow image>
                 <a href="#pablo">
-                  <img src={suit1} alt=".." />
+                  <img
+                    src={`http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${key.imageSrc}`}
+                    alt=".."
+                  />
                 </a>
               </CardHeader>
               <CardBody plain style={{ marginLeft: "1rem" }}>
@@ -104,7 +121,7 @@ export default function SectionProducts(props) {
                   <Link
                     to={{
                       pathname: "/propContact",
-                      query: { propId: key.propertyId , bookId: key._id}
+                      query: { propId: key.propertyId, bookId: key._id }
                     }}
                     style={{ color: "#00acc1" }}
                   >
@@ -132,7 +149,7 @@ export default function SectionProducts(props) {
         <h2 style={{ textAlign: "center" }}>My Bookings</h2>
         <GridContainer>
           <GridItem md={12} sm={12}>
-            <GridContainer>{bookingDisplay}</GridContainer>
+            <GridContainer>{loading ? display : bookingDisplay}</GridContainer>
           </GridItem>
         </GridContainer>
         <br />

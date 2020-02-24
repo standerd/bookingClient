@@ -34,7 +34,7 @@ export default function ProductPage(props) {
 
   const classes = useStyles();
   const images = imagesArray.map(key => {
-    return { original: key, thumbnail: key };
+    return { original: `http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${key}`, thumbnail: `http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${key}` };
   });
 
   let facilities;

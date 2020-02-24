@@ -4,86 +4,178 @@ import React from "react";
 import classNames from "classnames";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import Tooltip from "@material-ui/core/Tooltip";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-// @material-ui/icons
-import Camera from "@material-ui/icons/Camera";
-import Palette from "@material-ui/icons/Palette";
-import People from "@material-ui/icons/People";
-import Add from "@material-ui/icons/Add";
-import Favorite from "@material-ui/icons/Favorite";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import Icon from "@material-ui/core/Icon";
 // core components
-import Header from "components/Header/Header.js";
+
 import Footer from "components/Footer/Footer.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
-import NavPills from "components/NavPills/NavPills.js";
-import Card from "components/Card/Card.js";
-import CardBody from "components/Card/CardBody.js";
-import CardHeader from "components/Card/CardHeader.js";
-import Badge from "components/Badge/Badge.js";
-import Muted from "components/Typography/Muted.js";
-import Parallax from "components/Parallax/Parallax.js";
-import Clearfix from "components/Clearfix/Clearfix.js";
-import Button from "components/CustomButtons/Button.js";
-
-import christian from "assets/img/faces/christian.jpg";
-import oluEletu from "assets/img/examples/olu-eletu.jpg";
-import clemOnojeghuo from "assets/img/examples/clem-onojeghuo.jpg";
-import cynthiaDelRio from "assets/img/examples/cynthia-del-rio.jpg";
-import mariyaGeorgieva from "assets/img/examples/mariya-georgieva.jpg";
-import clemOnojegaw from "assets/img/examples/clem-onojegaw.jpg";
-import darrenColeshill from "assets/img/examples/darren-coleshill.jpg";
-import avatar from "assets/img/faces/avatar.jpg";
-import marc from "assets/img/faces/marc.jpg";
-import kendall from "assets/img/faces/kendall.jpg";
-import cardProfile2Square from "assets/img/faces/card-profile2-square.jpg";
+import CustomInput from "components/CustomInput/CustomInput.js";
 
 import profilePageStyle from "assets/jss/material-kit-pro-react/views/profilePageStyle.js";
+import "./cssSpinner.css";
+import image from "assets/img/land3.jpg";
 
 const useStyles = makeStyles(profilePageStyle);
 
-export default function ProfilePage({ ...rest }) {
+export default function ProfilePage(props, { ...rest }) {
+  const [userDetails, setUserDetails] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const token = localStorage.getItem("token");
   React.useEffect(() => {
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-  });
+    setLoading(true);
+
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/user",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      }
+    )
+      .then(res => res.json())
+      .then(result => {
+        setUserDetails(result.user);
+        setLoading(false);
+      })
+      .catch(err => console.log(err));
+    // window.scrollTo(0, 0);
+    // document.body.scrollTop = 0;
+  }, [token]);
+
   const classes = useStyles();
-  const imageClasses = classNames(
-    classes.imgRaised,
-    classes.imgRoundedCircle,
-    classes.imgFluid
+
+  let form = (
+    <GridContainer justify="center">
+      <GridItem xs={12} sm={12} md={7}>
+        <CustomInput
+          id="pass"
+          labelText="Account Name"
+          formControlProps={{
+            fullWidth: true,
+            required: true
+          }}
+          inputProps={{
+            type: "text",
+            value: userDetails === "" ? "Testing" : userDetails[0].name,
+            required: true,
+
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon className={classes.inputIconsColor}>account_box</Icon>
+              </InputAdornment>
+            ),
+            autoComplete: "off"
+          }}
+        />
+      </GridItem>
+      <GridItem xs={12} sm={12} md={7}>
+        <CustomInput
+          id="mail"
+          labelText="Email Address"
+          formControlProps={{
+            fullWidth: true,
+            required: true
+          }}
+          inputProps={{
+            type: "text",
+            // onChange: props.changeHandler("password"),
+            value: userDetails === "" ? "Testing" : userDetails[0].email,
+            required: true,
+
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon className={classes.inputIconsColor}>email</Icon>
+              </InputAdornment>
+            ),
+            autoComplete: "off"
+          }}
+        />
+      </GridItem>
+      <GridItem xs={12} sm={12} md={7}>
+        <CustomInput
+          id="phone"
+          labelText="Telephone Number"
+          formControlProps={{
+            fullWidth: true,
+            required: true
+          }}
+          inputProps={{
+            type: "text",
+            // onChange: props.changeHandler("password"),
+            value: userDetails === "" ? "Testing" : userDetails[0].telNo,
+            required: true,
+
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon className={classes.inputIconsColor}>phone</Icon>
+              </InputAdornment>
+            ),
+            autoComplete: "off"
+          }}
+        />
+      </GridItem>
+      <GridItem xs={12} sm={12} md={7}>
+        <CustomInput
+          id="prop"
+          labelText="Property Id"
+          formControlProps={{
+            fullWidth: true,
+            required: true
+          }}
+          inputProps={{
+            type: "text",
+            // onChange: props.changeHandler("password"),
+            value: userDetails === "" ? "Testing" : userDetails[0].propId,
+            required: true,
+
+            startAdornment: (
+              <InputAdornment position="start">
+                <Icon className={classes.inputIconsColor}>local_hotel</Icon>
+              </InputAdornment>
+            ),
+            autoComplete: "off"
+          }}
+        />
+      </GridItem>
+    </GridContainer>
   );
-  const navImageClasses = classNames(classes.imgRounded, classes.imgGallery);
   return (
     <div>
-      <Header
-        color="transparent"
-        brand="Material Kit PRO React"
-        links={<HeaderLinks dropdownHoverColor="info" />}
-        changeColorOnScroll={{
-          height: 200,
-          color: "info"
-        }}
-        {...rest}
-      />
-
       <div
-        className={classNames(classes.main, classes.mainRaised)}
-        style={{ marginTop: "30px" }}
+        style={{
+          backgroundImage: "url(" + image + ")",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          paddingTop: "10%",
+          paddingBottom: "20px",
+          height: "93vh"
+        }}
       >
-        <div className={classes.container}>
-          <GridContainer justify="center">
-            <GridItem xs={12} sm={12} md={6}></GridItem>
-          </GridContainer>
-          <div className={classNames(classes.description, classes.textCenter)}>
-            <h2>Your Account Details</h2>
+        <div
+          className={classNames(classes.main, classes.mainRaised)}
+          style={{
+            marginTop: "30px",
+            width: "60%",
+            marginLeft: "auto",
+            marginRight: "auto"
+          }}
+        >
+          <div
+            className={classes.container}
+            style={{ paddingTop: "10px", padding: " 10%" }}
+          >
+            <div
+              className={classNames(classes.description, classes.textCenter)}
+            >
+              <h2>Your Account Details</h2>
+            </div>
+            {loading ? <div className="loader">Loading...</div> : form}
           </div>
         </div>
       </div>
-      
+
       <Footer
         className={classes.footer}
         content={

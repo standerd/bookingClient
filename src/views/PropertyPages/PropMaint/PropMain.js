@@ -6,6 +6,9 @@ import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
 import Datetime from "react-datetime";
 import FormControl from "@material-ui/core/FormControl";
+import Footer from "components/Footer/Footer.js";
+
+import image from "assets/img/land3.jpg";
 
 //entity can maintain their availability and upload images after registration.
 
@@ -33,6 +36,7 @@ class UploadImage extends Component {
     dateOut: "",
     updateError: false,
     loaded: false,
+    loading: false,
     uploading: false
   };
 
@@ -44,7 +48,16 @@ class UploadImage extends Component {
   // date in change handler from calendar selector
   onDateChange = (name, value) => {
     if (name === "dateIn") {
-      this.setState({ dateIn: moment(value, "DD-MM-YYYY"), dateOut: "" });
+      this.setState({ dateIn: moment(value, "DD-MM-YYYY") }, () => {
+        Date.prototype.addDays = function(days) {
+          var date = new Date(this.valueOf());
+          date.setDate(date.getDate() + days);
+          return date;
+        };
+        this.setState({
+          dateOut: new Date(moment(this.state.dateIn, "DD-MM-YYYY")).addDays(1)
+        });
+      });
     } else {
       this.setState({ dateOut: moment(value, "DD-MM-YYYY") });
     }
@@ -59,7 +72,7 @@ class UploadImage extends Component {
     let occupation = [];
     let token = localStorage.getItem("token");
     //on resubmit of the button the errors are reset.
-    this.setState({ updateError: false, loaded: false });
+    this.setState({ updateError: false, loaded: false, loading: true });
 
     //set the date range that is included as an array with the request to the server.
     let myFirstDate = new Date(this.state.dateIn);
@@ -76,13 +89,16 @@ class UploadImage extends Component {
     const formData = new FormData();
     formData.append("dateRange", occupation);
 
-    fetch("/maint/maintainDates", {
-      headers: {
-        Authorization: "Bearer " + token
-      },
-      method: "POST",
-      body: formData
-    })
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/maint/maintainDates",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        },
+        method: "POST",
+        body: formData
+      }
+    )
       .then(res => {
         if (res.status === 422) {
           throw new Error("Validation failed.");
@@ -93,10 +109,10 @@ class UploadImage extends Component {
         return res.json();
       })
       .then(result => {
-        this.setState({ loaded: true });
+        this.setState({ loaded: true, loading: false });
       })
       .catch(err => {
-        this.setState({ updateError: true });
+        this.setState({ updateError: true, loading: false });
       });
   };
 
@@ -112,14 +128,17 @@ class UploadImage extends Component {
     const formData = new FormData();
     formData.append("image", this.state.files);
 
-    fetch("/maint/uploadImg", {
-      headers: {
-        Authorization: "Bearer " + token
-      },
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/maint/uploadImg",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        },
 
-      method: "POST",
-      body: formData
-    })
+        method: "POST",
+        body: formData
+      }
+    )
       .then(res => res.json())
       .then(result =>
         this.setState({ preview: result.image, uploading: false })
@@ -128,15 +147,11 @@ class UploadImage extends Component {
   };
 
   render() {
-    let today = new Date();
     let checkIn = this.state.dateIn;
     // let checkOutLimitMonth = checkIn.getMonth() + 1;
     // let checkInLimitMonth = today.getMonth() + 1;
-    let day;
-    let checkDay;
     let yesterday = Datetime.moment().subtract(1, "day");
 
-    console.log(checkIn);
     let inLimit = function(current) {
       return current.isAfter(yesterday);
     };
@@ -145,134 +160,144 @@ class UploadImage extends Component {
       return current.isAfter(moment(checkIn, "DD-MM-YYYY"));
     };
 
-    // today.getDate() < 10
-    //   ? (day = "0" + today.getDate())
-    //   : (day = today.getDate().toString());
-    // checkIn.getDate() < 10
-    //   ? (checkDay = "0" + (checkIn.getDate() + 1))
-    //   : (checkDay = checkIn.getDate() + 1);
-
-    //first check if the months are single digits, if so a leading zero is added. and the date
-    // is contructed in the format expected by the HTML input calendar.
-    // checkInLimitMonth < 10
-    //   ? (checkInLimit =
-    //       today.getFullYear() +
-    //       "-0" +
-    //       checkInLimitMonth +
-    //       "-" +
-    //       today.getDate())
-    //   : (checkInLimit =
-    //       today.getFullYear() + "-" + checkInLimitMonth + "-" + day);
-
-    // checkOutLimitMonth < 10
-    //   ? (checkOutLimit =
-    //       checkIn.getFullYear() + "-0" + checkOutLimitMonth + "-" + checkDay)
-    //   : (checkOutLimit =
-    //       checkIn.getFullYear() + "-" + checkOutLimitMonth + "-" + checkDay);
-
     return (
-      <div className="maintain">
-        <h1>Upload Images or Maintain Availability Of Your Property</h1>
-        <div className="uploadImages">
-          <h4>Please Upload Images of Your Property Below</h4>
-          <GridContainer>
-            <GridItem xs={1} sm={2} md={2}></GridItem>
-            <GridItem xs={12} sm={3} md={3}>
-              <form>
-                <CustomFileInput
-                  myFunction={this.onImageChange}
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                  inputProps={{
-                    placeholder: "Please Select a Image"
-                  }}
-                />
-                <Button type="submit" onClick={this.uploadImg}>
-                  Upload
-                </Button>
-                {this.state.uploading ? (
-                  <h3 style={{ color: "green" }}>
-                    Image Uploading Please Be Patient
-                  </h3>
-                ) : null}
-              </form>
-            </GridItem>
+      <div
+        style={{
+          backgroundImage: "url(" + image + ")",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          paddingTop: "7%",
+          paddingBottom: "1%"
+        }}
+      >
+        <div style={{ marginTop: "2px" }}></div>
+        <div
+          className="maintain"
+          style={{
+            backgroundColor: "rgb(0, 172, 193)",
+            border: "1px solid white",
+            borderRadius: "5px",
+            padding: "5%"
+          }}
+        >
+          <h1 style={{ color: "white" }}>Property Maintenance</h1>
+          <div
+            className="uploadImages"
+            style={{
+              backgroundColor: "white",
+              border: "1px solid white",
+              borderRadius: "5px"
+            }}
+          >
+            <h4 style={{ color: "black" }}>
+              Please Upload Images of Your Property Below
+            </h4>
+            <GridContainer>
+              <GridItem xs={1} sm={2} md={2}></GridItem>
+              <GridItem xs={12} sm={3} md={3}>
+                <form>
+                  <CustomFileInput
+                    myFunction={this.onImageChange}
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    inputProps={{
+                      placeholder: "Please Select a Image"
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    onClick={this.uploadImg}
+                    style={{
+                      backgroundColor: "rgb(0, 172, 193)",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    {this.state.uploading ? "Uploading ...." : "Upload"}
+                  </Button>
+                </form>
+              </GridItem>
 
-            <GridItem xs={12} sm={6} md={6}>
-              <img
-                width="500px"
-                height="auto"
-                src={this.state.preview === "" ? "" : this.state.preview}
-                alt=""
-              />
-            </GridItem>
-          </GridContainer>
-        </div>
-        <div className="availability">
-          <h4>Please Update Your Availability For Any Manual Bookings</h4>
-          <h4>Or Other Unavailable Dates</h4>
-          <GridContainer>
-            <GridItem xs={1} sm={3} md={3}></GridItem>
-            <GridItem xs={12} sm={3} md={3}>
-              <FormControl fullWidth style={{ color: "black" }}>
-                <Datetime
-                  timeFormat={false}
-                  isValidDate={inLimit}
-                  closeOnSelect={true}
-                  value={this.state.dateIn}
-                  name="dateFrom"
-                  onChange={result => this.onDateChange("dateIn", result._d)}
-                  inputProps={{ placeholder: "Date From" }}
+              <GridItem xs={12} sm={6} md={6}>
+                <img
+                  width="500px"
+                  height="auto"
+                  src={
+                    this.state.preview === ""
+                      ? ""
+                      : `http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${this.state.preview}`
+                  }
+                  alt=""
                 />
-              </FormControl>
-            </GridItem>
-            <GridItem xs={12} sm={3} md={3}>
-              <FormControl fullWidth style={{ color: "black" }}>
-                <Datetime
-                  timeFormat={false}
-                  isValidDate={outLimit}
-                  closeOnSelect={true}
-                  value={this.state.dateOut}
-                  name="dateTo"
-                  onChange={result => this.onDateChange("dateOut", result._d)}
-                  inputProps={{ placeholder: "Date To" }}
-                />
-              </FormControl>
-            </GridItem>
-            <GridItem xs={0} sm={3} md={3}></GridItem>
-          </GridContainer>
-          <form>
-            {/* <label htmlFor="dateFrom">Date From</label>
-            <input
-              name="dateFrom"
-              type="date"
-              value={this.state.dateIn}
-              min={checkInLimit.toString()}
-              onChange={this.onDateInChange}
-            />
-            <label htmlFor="dateTo">Date To</label> */}
-            {/* <input
-              name="dateTo"
-              type="date"
-              onChange={this.onDateOutChange}
-              value={this.state.dateOut}
-              min={checkOutLimit.toString()}
-            /> */}
-            <br></br>
-            {this.state.updateError ? (
-              <h2 style={{ color: "red" }}>
-                There are already bookings for these dates. Please review
-              </h2>
-            ) : null}
-            {this.state.loaded ? (
-              <h2 style={{ color: "green" }}>Dates successfully added</h2>
-            ) : null}
-            <Button type="submit" onClick={this.onDateSubmit}>
-              Submit Dates
-            </Button>
-            <br></br>
-          </form>
+              </GridItem>
+            </GridContainer>
+          </div>
+          <div
+            className="availability"
+            style={{
+              backgroundColor: "white",
+              border: "1px solid white",
+              borderRadius: "5px"
+            }}
+          >
+            <h4 style={{ color: "black" }}>
+              Please Update Any Unavailable Dates
+            </h4>
+
+            <GridContainer>
+              <GridItem xs={1} sm={3} md={3}></GridItem>
+              <GridItem xs={12} sm={3} md={3}>
+                <FormControl fullWidth style={{ color: "black" }}>
+                  <Datetime
+                    timeFormat={false}
+                    isValidDate={inLimit}
+                    closeOnSelect={true}
+                    value={this.state.dateIn}
+                    name="dateFrom"
+                    onChange={result => this.onDateChange("dateIn", result._d)}
+                    inputProps={{ placeholder: "Date From" }}
+                    style={{ color: "white" }}
+                  />
+                </FormControl>
+              </GridItem>
+              <GridItem xs={12} sm={3} md={3}>
+                <FormControl fullWidth style={{ color: "black" }}>
+                  <Datetime
+                    timeFormat={false}
+                    isValidDate={outLimit}
+                    closeOnSelect={true}
+                    value={this.state.dateOut}
+                    name="dateTo"
+                    onChange={result => this.onDateChange("dateOut", result._d)}
+                    inputProps={{ placeholder: "Date To" }}
+                  />
+                </FormControl>
+              </GridItem>
+              <GridItem sm={3} md={3}></GridItem>
+            </GridContainer>
+            <form>
+              <br></br>
+              {this.state.updateError ? (
+                <h2 style={{ color: "red" }}>
+                  There are already bookings for these dates. Please review
+                </h2>
+              ) : null}
+              {this.state.loaded ? (
+                <h2 style={{ color: "green" }}>Dates successfully added</h2>
+              ) : null}
+              <Button
+                type="submit"
+                onClick={this.onDateSubmit}
+                style={{
+                  backgroundColor: "rgb(0, 172, 193)",
+                  fontWeight: "bold"
+                }}
+              >
+                {this.state.loading ? "Submitting ..." : "Submit Dates"}
+              </Button>
+              <br></br>
+            </form>
+          </div>
         </div>
       </div>
     );

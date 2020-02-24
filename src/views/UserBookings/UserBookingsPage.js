@@ -11,6 +11,7 @@ import SectionBookings from "./Sections/SectionBookings";
 import { makeStyles } from "@material-ui/core/styles";
 
 import styles from "assets/jss/material-kit-pro-react/views/ecommerceStyle.js";
+import image from "assets/img/land3.jpg";
 
 const useStyles = makeStyles(styles);
 
@@ -22,17 +23,27 @@ export default function EcommercePage() {
   const classes = useStyles();
   return (
     <div>
-      <div className={classNames(classes.main, classes.mainRaised)} style={{marginTop: "100px"}}>
-        <SectionBookings />
+      <div
+        style={{
+          backgroundImage: "url(" + image + ")",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          paddingTop: "9%",
+          paddingBottom: "2%"
+        }}
+      >
+        <div
+          className={classNames(classes.main, classes.mainRaised)}
+          style={{ marginTop: "2px" }}
+        >
+          <SectionBookings />
+        </div>
       </div>
-
       <Footer
-        className={classes.footer}
+        theme="white"
         content={
           <div>
-            <div className={classes.center}>
-              &copy; {1900 + new Date().getYear()} , MERN Development{" "}
-            </div>
+            <div>&copy; {1900 + new Date().getYear()} , MERN Development </div>
           </div>
         }
       />

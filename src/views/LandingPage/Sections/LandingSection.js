@@ -54,6 +54,7 @@ export default function SectionCards(props) {
   const classes = useStyles();
 
   let yesterday = Datetime.moment().subtract(1, "day");
+
   var inLimit = function(current) {
     return current.isAfter(yesterday);
   };
@@ -150,7 +151,7 @@ export default function SectionCards(props) {
                 type="button"
                 color="info"
               >
-                Search
+                {props.buttonName}
               </Button>
             </FormControl>
           </GridItem>

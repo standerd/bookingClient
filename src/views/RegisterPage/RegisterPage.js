@@ -1,6 +1,6 @@
 /*eslint-disable*/
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { withRouter, Link } from "react-router-dom";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -31,12 +31,74 @@ import image from "assets/img/land3.jpg";
 
 const useStyles = makeStyles(signupPageStyle);
 
-export default function SignUpPage({ ...rest }) {
+function SignUpPage(props) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [contact, setContact] = useState("");
+  const [error, setError] = useState(false);
+  const [error2, setError2] = useState(false);
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
   });
   const classes = useStyles();
+
+  const submitReg = e => {
+    e.preventDefault();
+
+    //before submitting request for registration to the server the password 1 and 2 fields are first
+    //checked for a match, if they do not match the user is shown an eror, else registration takes place.
+    if (password !== password2) {
+      setError(true);
+    } else {
+      setError(false);
+
+      fetch(
+        "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/user/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: name,
+            telNo: contact,
+            email: email,
+            password: password,
+            isAdmin: true,
+            validated: true
+          })
+        }
+      )
+        .then(res => {
+          console.log(res);
+          if (res.status === 401) {
+            throw new Error(
+              "Validation failed. Make sure the email address isn't used yet!"
+            );
+          }
+
+          if (res.status !== 200 && res.status !== 201) {
+            console.log("Error!");
+            throw new Error("Creating a user failed!");
+          }
+
+          return res.json();
+        })
+        .then(result => {
+          setError(false);
+          setError2(false);
+          props.history.push("/loginUser");
+        })
+        .catch(err => {
+          console.log("ERROR" + err);
+          setError2(true);
+        });
+    }
+  };
   return (
     <div>
       <Header
@@ -93,13 +155,9 @@ export default function SignUpPage({ ...rest }) {
                           />
                         </Button>
                         {` `}
-                        <Button justIcon round color="facebook">
-                          <i
-                            className={classes.socials + " fab fa-facebook-f"}
-                          />
-                        </Button>
-                        {` `}
-                        <h4 className={classes.socialTitle}>or be classical</h4>
+                        <h4 className={classes.socialTitle}>
+                          or sign up with another email
+                        </h4>
                       </div>
                       <form className={classes.form}>
                         <CustomInput
@@ -108,6 +166,10 @@ export default function SignUpPage({ ...rest }) {
                             className: classes.customFormControlClasses
                           }}
                           inputProps={{
+                            value: name,
+                            onChange: e => {
+                              setName(e.target.value);
+                            },
                             startAdornment: (
                               <InputAdornment
                                 position="start"
@@ -126,6 +188,10 @@ export default function SignUpPage({ ...rest }) {
                             className: classes.customFormControlClasses
                           }}
                           inputProps={{
+                            value: email,
+                            onChange: e => {
+                              setEmail(e.target.value);
+                            },
                             startAdornment: (
                               <InputAdornment
                                 position="start"
@@ -143,6 +209,10 @@ export default function SignUpPage({ ...rest }) {
                             className: classes.customFormControlClasses
                           }}
                           inputProps={{
+                            value: contact,
+                            onChange: e => {
+                              setContact(e.target.value);
+                            },
                             startAdornment: (
                               <InputAdornment
                                 position="start"
@@ -162,6 +232,11 @@ export default function SignUpPage({ ...rest }) {
                             className: classes.customFormControlClasses
                           }}
                           inputProps={{
+                            value: password,
+                            onChange: e => {
+                              setPassword(e.target.value);
+                            },
+                            type: "password",
                             startAdornment: (
                               <InputAdornment
                                 position="start"
@@ -181,6 +256,11 @@ export default function SignUpPage({ ...rest }) {
                             className: classes.customFormControlClasses
                           }}
                           inputProps={{
+                            value: password2,
+                            onChange: e => {
+                              setPassword2(e.target.value);
+                            },
+                            type: "password",
                             startAdornment: (
                               <InputAdornment
                                 position="start"
@@ -196,11 +276,31 @@ export default function SignUpPage({ ...rest }) {
                         />
 
                         <div className={classes.textCenter}>
-                          <Button round color="primary">
-                            Get Going
+                          <Button onClick={submitReg} round color="primary">
+                            Register
                           </Button>
                         </div>
                       </form>
+                      <p
+                        style={{
+                          textAlign: "center",
+                          color: "red",
+                          fontWeight: "bold"
+                        }}
+                      >
+                        {error
+                          ? "Passwords do not match please try again"
+                          : null}
+                      </p>
+                      <p
+                        style={{
+                          textAlign: "center",
+                          color: "red",
+                          fontWeight: "bold"
+                        }}
+                      >
+                        {error2 ? "User Already Exists, please login" : null}
+                      </p>
                       <div className={classes.textCenter}>
                         <h6>Already Have An Account</h6>
                         <Link style={{ fontWeight: "bold" }} to="login">
@@ -229,3 +329,5 @@ export default function SignUpPage({ ...rest }) {
     </div>
   );
 }
+
+export default withRouter(SignUpPage);

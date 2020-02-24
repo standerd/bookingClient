@@ -1,13 +1,9 @@
 import React, { Component } from "react";
-import { Route, withRouter, Switch } from "react-router-dom";
+import { Route, withRouter, Switch, Redirect } from "react-router-dom";
 
 import "assets/scss/material-kit-pro-react.scss?v=1.8.0";
 
 // pages for this product
-import AboutUsPage from "views/AboutUsPage/AboutUsPage.js";
-import BlogPostPage from "views/BlogPostPage/BlogPostPage.js";
-import BlogPostsPage from "views/BlogPostsPage/BlogPostsPage.js";
-import ComponentsPage from "views/ComponentsPage/ComponentsPage.js";
 import PropContactPage from "views/PropContactPage/PropContactPage.js";
 import SearchResults from "views/SearchResults/SearchResultsPage";
 import LoginPage from "views/LoginPage/LoginPage.js";
@@ -15,7 +11,6 @@ import LandingPage from "views/LandingPage/LandingPage";
 import ManageBookings from "views/ManageBooking/ManageBookingPage";
 import ProfilePage from "views/ProfilePage/ProfilePage.js";
 import PropDetailsPage from "views/PropDetailsPage/PropDetailsPage";
-import SectionsPage from "views/SectionsPage/SectionsPage.js";
 import CompleteBookingPage from "views/CompleteBookingPage/CompleteBookingPage";
 import RegisterPage from "views/RegisterPage/RegisterPage.js";
 import ErrorPage from "views/ErrorPage/ErrorPage.js";
@@ -27,8 +22,9 @@ import AdminProperties from "views/Admin/AdminProperties";
 import AdminUsers from "views/Admin/AdminUser";
 import PropRegister from "views/PropertyPages/PropRegister/RegisterPage";
 import PropMaintain from "views/PropertyPages/PropMaint/PropMain";
+import PropProfile from "views/PropProfile/PropProfile";
+import EntityBookings from "views/EntityBookings/EntityBookings";
 
-let days;
 let moment = require("moment");
 moment.updateLocale("en", {
   longDateFormat: {
@@ -80,7 +76,9 @@ class App extends Component {
     showInfo: false,
     selectedProp: null,
     bookingNo: null,
-    bookingSubmitted: false
+    bookingSubmitted: false,
+    buttonName: "Submit",
+    buttonText: "Submit Booking"
   };
 
   //login change handler that handles the users email and password input data.
@@ -92,16 +90,19 @@ class App extends Component {
   loginHandler = e => {
     e.preventDefault();
 
-    fetch("http://localhost:3001/user/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: this.state.email,
-        password: this.state.password
-      })
-    })
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/user/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: this.state.email,
+          password: this.state.password
+        })
+      }
+    )
       .then(res => {
         if (res.status === 422) {
           throw new Error("Please validate your e-mail adress first.");
@@ -266,7 +267,16 @@ class App extends Component {
 
   handleSearchChange = (name, value) => {
     if (name === "dateIn") {
-      this.setState({ dateIn: value.toLocaleDateString(), dateOut: "" });
+      this.setState({ dateIn: value.toLocaleDateString() }, () => {
+        Date.prototype.addDays = function(days) {
+          var date = new Date(this.valueOf());
+          date.setDate(date.getDate() + days);
+          return date;
+        };
+        this.setState({
+          dateOut: new Date(moment(this.state.dateIn, "DD-MM-YYYY")).addDays(1)
+        });
+      });
     } else {
       this.setState({ dateOut: value.toLocaleDateString() });
     }
@@ -276,24 +286,27 @@ class App extends Component {
   //sent to the server as a POST request and the returned data is set to state.
   handleSearchSubmit = e => {
     e.preventDefault();
-    if(this.state.dateOut == "") {
+    this.setState({ buttonName: "Searching ..." });
+    if (this.state.dateOut === "") {
       return;
     }
     this.setState({ waiting: true })
       ? this.setState({ valid: false })
-      : fetch("/search/searchProperty", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            lat: this.state.initialLat,
-            lng: this.state.initialLng
-          })
-        })
+      : fetch(
+          "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/searchProperty",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              lat: this.state.initialLat,
+              lng: this.state.initialLng
+            })
+          }
+        )
           .then(res => res.json())
           .then(result => {
-            console.log(result);
             // if no properties were found for the search location entered by the user
             // the server returns null, if null is received an error is set and a message
             // is shown to the user which cities have got properties loaded.
@@ -307,7 +320,8 @@ class App extends Component {
                   amendSearch: false,
                   valid: true,
                   getError: false,
-                  waiting: false
+                  waiting: false,
+                  buttonName: "Submit"
                 },
                 () => this.props.history.push("/searchResults")
               );
@@ -330,9 +344,8 @@ class App extends Component {
   };
 
   confirmBooking = e => {
-    console.log("Booking Submitted");
     e.preventDefault();
-    this.setState({ bookingSubmitted: true });
+    this.setState({ buttonText: "Processing ...." });
 
     let userId = localStorage.getItem("userId");
 
@@ -352,33 +365,36 @@ class App extends Component {
     }
 
     //server fetch request with booking details
-    fetch("/search/finaliseBooking", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        userId: userId,
-        propertyId: this.state.searchArray[this.state.selectedProp]._id,
-        checkInDate: this.state.dateIn,
-        checkOutDate: this.state.dateOut,
-        guestCount: this.state.noOfGuests,
-        totalBookingCost: parseInt(
-          this.state.searchArray[this.state.selectedProp].rates * duration
-        ),
-        bookingDate: new Date(),
-        bookingArray: occupation,
-        destination: this.state.city,
-        imageSrc: this.state.searchArray[this.state.selectedProp].images[0],
-        entityName: this.state.searchArray[this.state.selectedProp].name
-      })
-    })
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/finaliseBooking",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: userId,
+          propertyId: this.state.searchArray[this.state.selectedProp]._id,
+          checkInDate: this.state.dateIn,
+          checkOutDate: this.state.dateOut,
+          guestCount: this.state.noOfGuests,
+          totalBookingCost: parseInt(
+            this.state.searchArray[this.state.selectedProp].rates * duration
+          ),
+          bookingDate: new Date(),
+          bookingArray: occupation,
+          destination: this.state.city,
+          imageSrc: this.state.searchArray[this.state.selectedProp].images[0],
+          entityName: this.state.searchArray[this.state.selectedProp].name
+        })
+      }
+    )
       .then(res => res.json())
       .then(result => {
         this.setState({ bookingNo: result.booking }, () => {
           //booking completed controls if the user sees the booking info capture screen
           //or the booking confirmation screen.
-          this.setState({ bookingSubmitted: false });
+          this.setState({ buttonText: "Submit Booking" });
         });
       })
       .catch(err => console.log(err));
@@ -403,12 +419,7 @@ class App extends Component {
           }}
         />
         <Switch>
-          <Route path="/about-us" component={AboutUsPage} />
-          <Route path="/blog-post" component={BlogPostPage} />
-          <Route path="/blog-posts" component={BlogPostsPage} />
-          <Route path="/components" component={ComponentsPage} />
-          <Route path="/sections" component={SectionsPage} />
-          <Route path="/landing" component={LandingPage} />
+          <Route path="/propBookings" component={EntityBookings} />
           <Route path="/error-page" component={ErrorPage} />
           <Route path="/myAccount" component={ProfilePage} />
           <Route
@@ -496,12 +507,14 @@ class App extends Component {
                 bookingNumber={this.state.bookingNo}
                 confirmBooking={this.confirmBooking}
                 confirmed={this.state.bookingSubmitted}
+                buttonText={this.state.buttonText}
               />
             )}
           />
           <Route path="/bookings" component={UserBookings} />
           <Route path="/manageBooking" component={ManageBookings} />
           <Route path="/propContact" component={PropContactPage} />
+          <Route path="/propAccount" component={PropProfile} />
           <Route path="/adminBookings" component={AdminBookings} />
           <Route path="/adminUsers" component={AdminUsers} />
           <Route path="/adminProperties" component={AdminProperties} />
@@ -521,9 +534,11 @@ class App extends Component {
                 noOfGuests={this.state.noOfGuests}
                 valid={this.state.valid}
                 waiting={this.state.waiting}
+                buttonName={this.state.buttonName}
               />
             )}
           />
+          <Redirect to="/" />
         </Switch>
       </div>
     );

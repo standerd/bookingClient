@@ -1,35 +1,28 @@
 /*eslint-disable*/
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Phone from "@material-ui/icons/PhoneIphone";
-import Icon from "@material-ui/core/Icon";
-import Add from "@material-ui/icons/AddCircleOutline";
-import Bed from "@material-ui/icons/Hotel";
-import Cancel from "@material-ui/icons/Cancel";
+import Hotel from "@material-ui/icons/Business";
+import Money from "@material-ui/icons/MonetizationOn";
+import Location from "@material-ui/icons/LocationSearching";
 
 // @material-ui/icons
-import Face from "@material-ui/icons/Face";
-import People from "@material-ui/icons/Face";
 import Email from "@material-ui/icons/Email";
 // core components
-import Header from "components/Header/Header.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
 import Footer from "components/Footer/Footer.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-import InfoArea from "components/InfoArea/InfoArea.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import signupPageStyle from "assets/jss/material-kit-pro-react/views/signupPageStyle.js";
+
+import "../../Admin/cssSpinner.css";
 
 import image from "assets/img/land3.jpg";
 
@@ -149,10 +142,10 @@ export default class SignUpPage extends Component {
             backgroundImage: "url(" + image + ")",
             backgroundSize: "cover",
             backgroundPosition: "top center",
-            paddingTop: "200px"
+            paddingTop: "10%"
           }}
         >
-          <div>
+          <div style={{ padding: "0 2%" }}>
             <Card>
               <h2 style={{ textAlign: "center" }}>Register</h2>
               <form onSubmit={this.onSubmitHandler}>
@@ -169,7 +162,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("name"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Hotel />
                             </InputAdornment>
                           ),
                           placeholder: "Property Name"
@@ -186,7 +179,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("street"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Location />
                             </InputAdornment>
                           ),
                           placeholder: "Street Name and Number"
@@ -203,7 +196,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("suburb"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Location />
                             </InputAdornment>
                           ),
                           placeholder: "Suburb"
@@ -221,7 +214,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("city"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Location />
                             </InputAdornment>
                           ),
                           placeholder: "City"
@@ -238,7 +231,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("country"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Location />
                             </InputAdornment>
                           ),
                           placeholder: "Country"
@@ -255,7 +248,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("postal"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Location />
                             </InputAdornment>
                           ),
                           placeholder: "Postal Code"
@@ -273,7 +266,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("telNo"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Phone />
                             </InputAdornment>
                           ),
                           placeholder: "Telephone Number"
@@ -290,7 +283,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("altNo"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Phone />
                             </InputAdornment>
                           ),
                           placeholder: "Alternative Number"
@@ -307,7 +300,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("email"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Email />
                             </InputAdornment>
                           ),
                           placeholder: "Email Address"
@@ -325,7 +318,7 @@ export default class SignUpPage extends Component {
                           onChange: this.changeHandler("rates"),
                           startAdornment: (
                             <InputAdornment position="start">
-                              <Face />
+                              <Money />
                             </InputAdornment>
                           ),
                           placeholder: "Room Rate"
@@ -496,6 +489,12 @@ export default class SignUpPage extends Component {
                       <Button type="submit">Submit Form</Button>
                     </GridItem>
                     <GridItem xs={2} sm={4} md={4}></GridItem>
+                    <GridItem>
+                      {" "}
+                      {this.state.loading ? (
+                        <div className="loader">Loading...</div>
+                      ) : null}
+                    </GridItem>
                   </GridContainer>
                 </CardBody>
               </form>

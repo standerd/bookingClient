@@ -9,6 +9,7 @@ import {
   GoogleMap,
   Marker
 } from "react-google-maps";
+import { Link } from "react-router-dom";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -37,15 +38,17 @@ const useStyles = makeStyles(contactUsStyle);
 export default function ContactUsPage(props) {
   const [propertyDetails, setPropertyDetails] = React.useState("");
   const [message, setMessage] = React.useState("");
+  const [buttonText, setButtonText] = React.useState("Send Email");
+  const [success, setSuccess] = React.useState(false);
 
   let property = props.location.query.propId;
   let booking = props.location.query.bookId;
   const userId = localStorage.getItem("userId");
 
-  console.log(property);
-  console.log(message);
   React.useEffect(() => {
-    fetch(`http://localhost:3001/search/getProperty/${property}`)
+    fetch(
+      `http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/getProperty/${property}`
+    )
       .then(res => res.json())
       .then(result => {
         setPropertyDetails(result.details);
@@ -144,19 +147,24 @@ export default function ContactUsPage(props) {
   };
 
   const sendMessage = e => {
+    setButtonText("Sending ...");
     e.preventDefault();
-    fetch("http://localhost:3001/search/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: message,
-        userID: userId,
-        bookID: booking
-      })
-    })
+    fetch(
+      "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/contact",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: message,
+          userID: userId,
+          bookID: booking
+        })
+      }
+    )
       .then(res => res.json())
+      .then(result => setSuccess(true))
       .catch(err => console.log(err));
   };
 
@@ -187,6 +195,7 @@ export default function ContactUsPage(props) {
       <div className={classNames(classes.main, classes.mainRaised)}>
         <div className={classes.contactContent}>
           <div className={classes.container}>
+            <Link to="/bookings">Back to Bookings</Link>
             <h2 className={classes.title}>Contact Property</h2>
             <GridContainer>
               <GridItem md={6} sm={6}>
@@ -212,8 +221,14 @@ export default function ContactUsPage(props) {
                   />
                   <div className={classes.textCenter}>
                     <Button color="primary" round onClick={sendMessage}>
-                      Send
+                      {buttonText}
                     </Button>
+                    {success ? (
+                      <p style={{ color: "#9c27b0" }}>
+                        Thank you, Email was sent, please click above to go back
+                        to your bookings.
+                      </p>
+                    ) : null}
                   </div>
                 </form>
               </GridItem>

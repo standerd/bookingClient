@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // nodejs library to set properties for components

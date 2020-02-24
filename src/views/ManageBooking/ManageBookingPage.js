@@ -12,20 +12,40 @@ import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Footer from "components/Footer/Footer.js";
 // sections for this page
-import SectionPricing from "./Sections/ManageBookingSection";
+import ManageBooking from "./Sections/ManageBookingSection";
 
 import pricingStyle from "assets/jss/material-kit-pro-react/views/pricingStyle.js";
 
 const useStyles = makeStyles(pricingStyle);
 
 export default function PricingPage(props) {
+  const [booking, setBooking] = React.useState("");
   React.useEffect(() => {
+    if (props.location.query === undefined) {
+      return;
+    } else {
+      fetch(
+        "http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/search/booking",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            bookID: props.location.query.data1
+          })
+        }
+      )
+        .then(res => res.json())
+        .then(result => setBooking(result.booking[0]))
+        .catch(err => console.log(err));
+    }
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
-  });
+  }, []);
+
   const classes = useStyles();
 
-  console.log(props.location.query);
   return (
     <div>
       <Header
@@ -58,7 +78,7 @@ export default function PricingPage(props) {
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
         <div className={classes.container}>
-          <SectionPricing />
+          <ManageBooking booking={booking} />
         </div>
       </div>
       <Footer

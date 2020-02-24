@@ -19,6 +19,7 @@ import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 
 import shoppingCartStyle from "assets/jss/material-kit-pro-react/views/shoppingCartStyle.js";
+import "../Admin/cssSpinner.css";
 
 const useStyles = makeStyles(shoppingCartStyle);
 
@@ -39,6 +40,8 @@ moment.updateLocale("en", {
 });
 
 export default function ShoppingCartPage(props) {
+  const [loading, setLoading] = React.useState(false);
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
@@ -72,7 +75,7 @@ export default function ShoppingCartPage(props) {
               [
                 <div className={classes.imgContainer} key={1}>
                   <img
-                    src={props.bookingDetails.images[0]}
+                    src={`http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${props.bookingDetails.images[0]}`}
                     alt="..."
                     className={classes.img}
                   />
@@ -99,7 +102,7 @@ export default function ShoppingCartPage(props) {
                   colspan: 2,
                   text: (
                     <Button color="info" round onClick={props.confirmBooking}>
-                      Finalise Booking <KeyboardArrowRight />
+                      {props.buttonText} <KeyboardArrowRight />
                     </Button>
                   )
                 }
@@ -131,7 +134,7 @@ export default function ShoppingCartPage(props) {
   );
 
   let confirmBooking = (
-    <div>
+    <div className={classes.container}>
       <h3>Thanks for your Booking</h3>
       <h3>Your Booking Ref Is : {props.bookingNumber}</h3>
     </div>
@@ -172,8 +175,7 @@ export default function ShoppingCartPage(props) {
         style={{ padding: "2%" }}
         className={classNames(classes.main, classes.mainRaised)}
       >
-        {bookingScreen}
-        {props.bookingNumber === null ? null : confirmBooking}
+        {props.bookingNumber === null ? bookingScreen : confirmBooking}
       </div>
       <br />
       <Footer

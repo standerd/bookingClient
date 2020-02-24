@@ -22,8 +22,6 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
 
-import suit1 from "assets/images/image1.jpg";
-
 import styles from "assets/jss/material-kit-pro-react/views/ecommerceSections/productsStyle.js";
 
 let moment = require("moment");
@@ -101,7 +99,10 @@ export default function SectionProducts(props) {
             <Card plain product>
               <CardHeader noShadow image>
                 <a href="#pablo">
-                  <img src={key.images[0]} alt=".." />
+                  <img
+                    src={`http://ec2-54-93-215-192.eu-central-1.compute.amazonaws.com:3001/${key.images[0]}`}
+                    alt=".."
+                  />
                 </a>
               </CardHeader>
               <CardBody plain>

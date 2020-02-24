@@ -54,6 +54,7 @@ export default function PresentationPage(props) {
           valid={props.valid}
           waiting={props.waiting}
           handleGuestChange={props.handleGuestChange}
+          buttonName={props.buttonName}
         />
       </div>
       <Footer

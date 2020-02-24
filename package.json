@@ -53,7 +53,6 @@
     "prettier": "1.18.2",
     "typescript": "3.5.3"
   },
-  "proxy": "http://localhost:3001/",
   "browserslist": {
     "production": [
       ">0.2%",
